@@ -81,28 +81,28 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'ah_database',
-        'USER': 'postgres',
-        'PASSWORD': '15December',
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
     },
 
     'testing': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'ah_test_db',
-        'USER': 'postgres',
-        'PASSWORD': '15December',
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
     }
    ,
    'production': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'heroku_db',
-        'USER': 'postgres',
-        'PASSWORD': 'mypassword',
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
