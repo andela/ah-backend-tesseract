@@ -4,11 +4,17 @@ python:
 
 install:
   - pip3 install -r requirements.txt
+  - pip3 install coverage
+  - pip3 install coveralls
 
 script:
-    - python manage.py migrate
-    - python manage.py test
+  - python manage.py migrate 
+  - coverage run --source='.' ./manage.py test 
+  # Code coverage
+  - coverage report
 
 notifications:
     slack: andela:Z0OEK3ImbHCX21YMYGIpIa92
 
+after_script:
+  - coveralls
