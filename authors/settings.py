@@ -81,8 +81,30 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ah_database',
+        'USER': 'postgres',
+        'PASSWORD': '15December',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    },
+
+    'testing': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ah_test_db',
+        'USER': 'postgres',
+        'PASSWORD': '15December',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+   ,
+   'production': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'heroku_db',
+        'USER': 'postgres',
+        'PASSWORD': 'mypassword',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
