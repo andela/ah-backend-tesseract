@@ -1,3 +1,5 @@
+[![Build Status](https://www.travis-ci.org/andela/ah-backend-tesseract.svg?branch=develop)](https://www.travis-ci.org/andela/ah-backend-tesseract)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
