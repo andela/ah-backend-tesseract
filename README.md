@@ -9,6 +9,29 @@ Create a community of like minded authors to foster inspiration and innovation
 by leveraging the modern web.
 
 ---
+## Setup
+##### Dependencies
+* [Python 3.6](https://docs.python.org/3/)
+* [Django 2.1](https://docs.djangoproject.com/en/2.1/releases/2.1/)
+* [PostgreSQL](https://www.postgresql.org/)
+
+####  Getting Started
+- clone the github repo by running `$ git clone https://github.com/andela/ah-backend-tesseract`
+- cd into the project and create a virtual environment by running `$ virtualenv venv`
+- Activate the virtual environment by running `$ . venv/bin/activate`
+- install the project requirements by running `$ pip install -r requirements.txt`
+- create a database in PostgreSQL
+- create a `.env` file and store the environment variables as shown in the `.env.sample` file.
+- make sure the `DATABASE_NAME` in the .env matches the name on the database you created in PostgreSQL
+- run `source .env` to export your environment variables to the virtual env
+- run `python manage.py migrate` to create database tables.
+- run the application by `python manage.py runserver`
+
+
+#### Testing
+- run the tests by `python manage.py test`
+- run tests with coverage `coverage run --source='.' ./manage.py test `
+
 
 ## API Spec
 The preferred JSON object to be returned by the API should be structured as follows:
