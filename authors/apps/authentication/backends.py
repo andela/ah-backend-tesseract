@@ -2,16 +2,15 @@ import jwt
 
 from rest_framework import exceptions
 from rest_framework.authentication import get_authorization_header, BaseAuthentication
-
 from authors.apps.authentication.models import User
 from authors.settings import SECRET_KEY
 
 
 class JWTAuthentication(BaseAuthentication):
 
-    def authenticate(self, request):
+    def authenticate(self, request, **kwargs):
 
-        token = get_authorization_header(request)
+        token = JWTAuthentication.get_token(request, kwargs)
 
         if not token:
             return None
@@ -30,3 +29,13 @@ class JWTAuthentication(BaseAuthentication):
 
         except jwt.ExpiredSignature:
             raise exceptions.AuthenticationFailed("Token expired Login again to get new token")
+
+    @staticmethod
+    def get_token(request, kwargs):
+
+        if "token" in kwargs:
+            token = kwargs["token"]
+        else:
+            token = get_authorization_header(request)
+
+        return token
