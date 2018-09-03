@@ -1,6 +1,9 @@
+from django.utils.http import urlsafe_base64_encode
+from django.shortcuts import get_object_or_404
 from rest_framework import status
-
+from django.utils.encoding import force_bytes
 from . import BaseTest
+from ..models import User
 
 
 class AuthenticationTests(BaseTest):
@@ -20,6 +23,23 @@ class AuthenticationTests(BaseTest):
 
     def test_user_registration(self):
         self.assertEqual(self.register_response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_account_activation(self):
+        user = get_object_or_404(User, email=self.register_response.data["email"])
+        user_id = urlsafe_base64_encode(force_bytes(user.id)).decode()
+        token = self.register_response.data["token"]
+        response = self.client.get("/api/activate/"+user_id+"/"+token+"/account/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "account activated, you can proceed to login")
+
+    def test_account_activation_with_wrong_values(self):
+        response = self.client.get("/api/activate/wq/jskjahjs/account/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_update(self):
+        """Test if a user can update his username"""
+        response = self.client.put("/api/user/", self.user_validate_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_update(self):
         """Test if a user can update his username"""

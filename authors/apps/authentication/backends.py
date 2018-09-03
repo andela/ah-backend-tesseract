@@ -9,9 +9,11 @@ from authors.settings import SECRET_KEY
 
 class JWTAuthentication(BaseAuthentication):
 
-    def authenticate(self, request):
-
-        token = get_authorization_header(request)
+    def authenticate(self, request, **kwargs):
+        if "token" in kwargs:
+            token = kwargs["token"]
+        else:
+            token = get_authorization_header(request)
 
         if not token:
             return None

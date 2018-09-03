@@ -3,11 +3,15 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
+from .models import User
+from .backends import JWTAuthentication
+from .utils import custom_send_mail
 
 
 class RegistrationAPIView(APIView):
@@ -25,7 +29,30 @@ class RegistrationAPIView(APIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        email = serializer.data.get('email', None)
+        email_subject = "Activate Authors Haven Account"
+        custom_send_mail(email, request, 'email_activation.html', email_subject)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ActivateAccountAPIView(APIView):
+
+    def get(self, request, user_id, token):
+        try:
+            user_id = force_text(urlsafe_base64_decode(user_id))
+            user = User.objects.get(pk=user_id)
+
+        except(TypeError, ValueError, OverflowError):
+            user = None
+
+        auth = JWTAuthentication()
+        auth_result = auth.authenticate(request, token=token)
+        if user is not None and auth_result[0].id == user.id:
+            user.is_active = True
+            user.save()
+            # login the user
+            return Response({"message": "account activated, you can proceed to login"}, status=status.HTTP_200_OK)
 
 
 class LoginAPIView(APIView):
