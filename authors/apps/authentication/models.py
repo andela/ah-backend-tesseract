@@ -2,11 +2,13 @@ import jwt
 
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
 from django.db import models
+
+from authors.settings import SECRET_KEY
+
 
 class UserManager(BaseUserManager):
     """
@@ -101,6 +103,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     @property
+    def token(self):
+        return self.generate_token()
+
+    @property
     def get_full_name(self):
       """
       This method is required by Django for things like handling emails.
@@ -116,5 +122,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+
+    def generate_token(self):
+        payload = {
+            "id": self.id,
+            "username": self.username,
+            "exp": datetime.now() + timedelta(days=1)
+        }
+        return jwt.encode(payload, SECRET_KEY).decode('utf-8')
 
 
