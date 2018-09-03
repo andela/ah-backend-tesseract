@@ -1,7 +1,6 @@
 import re
 
 from django.contrib.auth import authenticate
-
 from rest_framework import serializers
 
 from .models import User
@@ -152,6 +151,7 @@ class UserSerializer(serializers.ModelSerializer):
         # password field, we needed to specify the `min_length` and 
         # `max_length` properties too, but that isn't the case for the token
         # field.
+
 
     def update(self, instance, validated_data):
         """Performs an update on a User."""
