@@ -1,6 +1,6 @@
 [![Build Status](https://www.travis-ci.org/andela/ah-backend-tesseract.svg?branch=develop)](https://www.travis-ci.org/andela/ah-backend-tesseract)
-[![Coverage Status](https://coveralls.io/repos/github/andela/ah-backend-tesseract/badge.svg?branch=Ch-integrate-test-coverage-159951960)](https://coveralls.io/github/andela/ah-backend-tesseract?branch=Ch-integrate-test-coverage-159951960)
-
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-backend-tesseract/badge.svg?branch=develop)](https://coveralls.io/github/andela/ah-backend-tesseract?branch=develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/4f7fed9c6af80aaf6360/maintainability)](https://codeclimate.com/github/andela/ah-backend-tesseract/maintainability)
 Authors Haven - A Social platform for the creative at heart.
 =======
 

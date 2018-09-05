@@ -1,38 +1,9 @@
-import jwt
-from django.test import TestCase
-from rest_framework.test import APIClient
 from rest_framework import status
 
-from authors.settings import SECRET_KEY
-
-from .models import User
+from . import BaseTest
 
 
-class BaseTest:
-    def __init__(self):
-        self.user_data = {"user":
-                              {"username": "Jacob1", "email": "jake@jakeg.jake", "password": "jakejakeh"}
-                          }
-
-        self.login_data_email = {"user":
-                                     {"email": "jake@jakeg.jake", "password": "jakejakeh"}
-                                 }
-        self.unregistered_user_data = {"user":
-                                           {"email": "jake@hhd.jake", "password": "jakeakeh"}
-                                       }
-
-
-class AuthenticationTests(TestCase, BaseTest):
-
-    def setUp(self):
-        BaseTest.__init__(self)
-        User.objects.create_user("user_test", "mail@me.com", password="1234")
-        self.user = User.objects.get(email="mail@me.com")
-        self.client = APIClient()
-        self.register_response = self.client.post("/api/users/", self.user_data, format="json")
-        self.login_response = self.client.post("/api/users/login/", self.login_data_email, format="json")
-        token = self.login_response.data["token"]
-        self.client.credentials(HTTP_AUTHORIZATION=token)
+class AuthenticationTests(BaseTest):
 
     def test_username_label(self):
         field_label = self.user._meta.get_field('username').verbose_name
@@ -50,6 +21,11 @@ class AuthenticationTests(TestCase, BaseTest):
     def test_user_registration(self):
         self.assertEqual(self.register_response.status_code, status.HTTP_201_CREATED)
 
+    def test_user_update(self):
+        """Test if a user can update his username"""
+        response = self.client.put("/api/user/", self.user_validate_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_user_login_with_email(self):
         self.assertEqual(self.login_response.status_code, status.HTTP_200_OK)
 
@@ -59,10 +35,6 @@ class AuthenticationTests(TestCase, BaseTest):
 
     def test_user_response_on_register(self):
         response = self.register_response
-        self.assertEqual(len(response.data["token"]) > 2, True)
-
-    def test_user_response_on_login(self):
-        response = self.login_response
         self.assertEqual(len(response.data["token"]) > 2, True)
 
     def test_no_token_provided(self):
@@ -78,4 +50,3 @@ class AuthenticationTests(TestCase, BaseTest):
     def test_user_retrieve(self):
         response = self.client.get("/api/user/", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-

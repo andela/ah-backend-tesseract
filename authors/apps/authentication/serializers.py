@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import authenticate
 
 from rest_framework import serializers
@@ -16,8 +18,42 @@ class RegistrationSerializer(serializers.ModelSerializer):
         write_only=True
     )
 
-    # The client should not be able to send a token along with a registration
-    # request. Making `token` read-only handles that for us.
+    def validate(self, data):
+        """
+        This checks if:
+        the username is at least 4 characters long
+        the username doesn't contain any invalid characters
+        the password contains at least 1 number and at least 1 character
+        The other validations are done in the User model.
+        """
+        username = data.get('username', None)
+        email = data.get('email', None)
+        password = data.get('password', None)
+
+        if not re.match("^[A-Za-z0-9_-]*$", username):
+            raise serializers.ValidationError(
+                'Username should only contain letters, numbers, underscores and hyphens'
+            )
+
+        if len(username) < 4:
+            raise serializers.ValidationError(
+                'The username should be at least 4 characters long'
+            )
+
+        if password.isdigit():
+            raise serializers.ValidationError(
+                'Weak password. The password should contain at least one character'
+            )
+        elif re.search('[0-9]', password) is None:
+            raise serializers.ValidationError(
+                'Weak password. The password should contain at least one digit'
+            )
+
+        return {
+            'username': username,
+            'email': email,
+            'password': password,
+        }
 
     class Meta:
         model = User
@@ -116,7 +152,6 @@ class UserSerializer(serializers.ModelSerializer):
         # password field, we needed to specify the `min_length` and 
         # `max_length` properties too, but that isn't the case for the token
         # field.
-
 
     def update(self, instance, validated_data):
         """Performs an update on a User."""
