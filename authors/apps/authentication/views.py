@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.authentication import get_authorization_header
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -7,8 +8,8 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
-)
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    ComfirmPasswordResetSerializer, RequestPasswordResetSerializer)
 from .models import User
 from .backends import JWTAuthentication
 from .utils import custom_send_mail
@@ -93,3 +94,35 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class PasswordResetAPIView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = RequestPasswordResetSerializer
+
+    def post(self, request):
+
+        email = request.data.get('email', None)
+        serializer = self.serializer_class(data={"email": email})
+        serializer.is_valid(raise_exception=True)
+        email_subject = "Reset Authors Haven's Password"
+        message = {"message": "Please check your email for your password reset activation code."}
+        custom_send_mail(email, request, "password_reset.html", email_subject)
+        return Response(message, status=status.HTTP_200_OK)
+
+
+class ComfirmPasswordResetAPIView(RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = ComfirmPasswordResetSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        token = get_authorization_header(request).decode("utf-8")
+        return Response({"token": token}, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        user = request.data.get('user', {})
+        serializer = self.serializer_class(request.user, data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Your password has been reset"}, status=status.HTTP_200_OK)

@@ -4,6 +4,19 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from .models import User
+from django.shortcuts import get_object_or_404
+
+
+def validate_password(password):
+    if password.isdigit():
+        raise serializers.ValidationError(
+            'Weak password. The password should contain at least one character'
+        )
+    elif re.search('[0-9]', password) is None:
+        raise serializers.ValidationError(
+            'Weak password. The password should contain at least one digit'
+        )
+    return password
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -39,14 +52,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 'The username should be at least 4 characters long'
             )
 
-        if password.isdigit():
-            raise serializers.ValidationError(
-                'Weak password. The password should contain at least one character'
-            )
-        elif re.search('[0-9]', password) is None:
-            raise serializers.ValidationError(
-                'Weak password. The password should contain at least one digit'
-            )
+        password = validate_password(password)
 
         return {
             'username': username,
@@ -152,7 +158,6 @@ class UserSerializer(serializers.ModelSerializer):
         # `max_length` properties too, but that isn't the case for the token
         # field.
 
-
     def update(self, instance, validated_data):
         """Performs an update on a User."""
 
@@ -176,6 +181,50 @@ class UserSerializer(serializers.ModelSerializer):
         # Finally, after everything has been updated, we must explicitly save
         # the model. It's worth pointing out that `.set_password()` does not
         # save the model.
+        instance.save()
+
+        return instance
+
+
+class RequestPasswordResetSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+
+    def validate(self, data):
+        email = data.get('email', None)
+        if email is None:
+            raise serializers.ValidationError(
+                'An email address is required to reset your password.'
+            )
+
+        user = get_object_or_404(User, email=email)
+        if user is None:
+            raise serializers.ValidationError(
+                'This email address is not registered please sign up.'
+            )
+        return {"id": user.id}
+
+
+class ComfirmPasswordResetSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
+
+    def validate(self, data):
+        """
+        the password contains at least 1 number and at least 1 character
+        """
+        password = data.get('password', None)
+        password = validate_password(password)
+
+        return {
+            'password': password
+        }
+
+    def update(self, instance, validated_data):
+        """Performs an update on a User."""
+        password = validated_data.pop('password', None)
+
+        if password is not None:
+            instance.set_password(password)
+
         instance.save()
 
         return instance

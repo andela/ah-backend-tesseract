@@ -65,3 +65,35 @@ class AuthenticationTests(BaseTest):
     def test_user_retrieve(self):
         response = self.client.get("/api/user/", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_request_password_reset(self):
+        response = self.client.post('/api/password-reset/', {"email": "mail@me.com"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_request_password_reset_with_an_empty_email(self):
+        response = self.client.post('/api/password-reset/', {"email": "uregistered@invalid.com"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_request_password_reset_with_an_unregistered_email(self):
+        response = self.client.post('/api/password-reset/', {"email": " "}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_redirect_to_password_reset(self):
+        self.client.post('/api/password-reset/', {"email": "mail@me.com"}, format="json")
+        response = self.client.get('/api/password-reset/<str:token>/', format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_new_password_reset_done(self):
+        data = {"user": {"password": "23newpassword"}}
+
+        self.client.post('/api/password-reset/', {"email": "mail@me.com"}, format="json")
+        self.client.get('/api/password-reset/<str:token>/', format="json")
+        response = self.client.put('/api/password-reset/done/', data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_new_password_reset_done_with_a_weak_password(self):
+        data = {"user": {"password": "1"}}
+        self.client.post('/api/password-reset/', {"email": "mail@me.com"}, format="json")
+        self.client.get('/api/password-reset/<str:token>/', format="json")
+        response = self.client.put('/api/password-reset/done/', data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
