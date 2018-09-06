@@ -3,3 +3,4 @@ omit =
     *settings.py
     *wsgi.py
     *manage.py
+    ./venv/*
