@@ -148,7 +148,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'password', 'token')
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password
@@ -228,3 +228,8 @@ class ComfirmPasswordResetSerializer(serializers.Serializer):
         instance.save()
 
         return instance
+
+class SocialAuthenticationSerializer(serializers.Serializer):
+    """Serializers social_auth requests"""
+    provider = serializers.CharField(max_length=255, required=True)
+    access_token = serializers.CharField(max_length=1024, required=True, trim_whitespace=True)

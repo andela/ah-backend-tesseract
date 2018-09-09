@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (
     LoginAPIView, RegistrationAPIView, UserRetrieveUpdateAPIView, ActivateAccountAPIView,
-    PasswordResetAPIView, ComfirmPasswordResetAPIView
+    PasswordResetAPIView, ComfirmPasswordResetAPIView, SocialAuthenticationAPIView
 )
 
 urlpatterns = [
@@ -14,5 +14,6 @@ urlpatterns = [
     path('password-reset/<str:token>/', ComfirmPasswordResetAPIView.as_view(),
          name='comfirm_password_reset'),
     path('password-reset/done', ComfirmPasswordResetAPIView.as_view(), name='password_reset_done'),
+    path('social/', SocialAuthenticationAPIView.as_view(), name="social"),
 
 ]

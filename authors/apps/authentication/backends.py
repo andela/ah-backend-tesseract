@@ -20,6 +20,7 @@ class JWTAuthentication(BaseAuthentication):
 
             user_id = decoded["id"]
             username = decoded["username"]
+
             user = User.objects.get(id=user_id, username=username)
 
             return user, token
