@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.authentication import get_authorization_header
 from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.encoding import force_text
@@ -85,7 +85,18 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
+        user_data = request.data.get('user', {})
+        serializer_data = {
+            'username': user_data.get('username', request.user.username),
+            'email': user_data.get('email', request.user.email),
+
+            "profile": {
+                'bio': user_data.get('bio', request.user.profile.bio),
+                'image': user_data.get('image', request.user.profile.image),
+                'location': user_data.get('location', request.user.profile.location),
+                'occupation': user_data.get('occupation', request.user.profile.occupation),
+            }
+        }
 
         # Here is that serialize, validate, save pattern we talked about
         # before.
