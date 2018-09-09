@@ -22,5 +22,7 @@ urlpatterns = [
     path('api/', include('authors.apps.authentication.urls')),
     path('api/', include('authors.apps.articles.urls')),
     path('oauth/', include('social_django.urls')),
+
+    path('api/', include('authors.apps.profiles.urls')),
 ]
 
