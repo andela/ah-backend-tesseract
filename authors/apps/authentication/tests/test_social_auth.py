@@ -1,5 +1,5 @@
 from rest_framework import status
-from . import BaseTest
+from authors.apps.authentication.tests import BaseTest
 
 
 class SocialAuthenticationTests(BaseTest):

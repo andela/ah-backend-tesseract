@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
-from .renderers import UserJSONRenderer
+from authors.apps import ApplicationJSONRenderer as UserJSONRenderer
 from social_core.exceptions import MissingBackend
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,

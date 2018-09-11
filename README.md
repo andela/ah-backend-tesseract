@@ -40,31 +40,28 @@ The preferred JSON object to be returned by the API should be structured as foll
 ### Users (for authentication)
 
 ```source-json
-{
-  "user": {
+ {
     "email": "jake@jake.jake",
     "token": "jwt.token.here",
     "username": "jake",
     "bio": "I work at statefarm",
     "image": null
-  }
-}
+ }
+
 ```
 ### Profile
 ```source-json
-{
-  "profile": {
+ {
     "username": "jake",
     "bio": "I work at statefarm",
     "image": "image-link",
     "following": false
-  }
-}
+ }
+
 ```
 ### Single Article
 ```source-json
 {
-  "article": {
     "slug": "how-to-train-your-dragon",
     "title": "How to train your dragon",
     "description": "Ever wonder how?",
@@ -80,13 +77,12 @@ The preferred JSON object to be returned by the API should be structured as foll
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
     }
-  }
 }
+
 ```
 ### Multiple Articles
 ```source-json
-{
-  "articles":[{
+[{
     "slug": "how-to-train-your-dragon",
     "title": "How to train your dragon",
     "description": "Ever wonder how?",
@@ -119,14 +115,12 @@ The preferred JSON object to be returned by the API should be structured as foll
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
     }
-  }],
-  "articlesCount": 2
-}
+  }]
+
 ```
 ### Single Comment
 ```source-json
 {
-  "comment": {
     "id": 1,
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:22:56.637Z",
@@ -138,12 +132,11 @@ The preferred JSON object to be returned by the API should be structured as foll
       "following": false
     }
   }
-}
+
 ```
 ### Multiple Comments
 ```source-json
-{
-  "comments": [{
+[{
     "id": 1,
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:22:56.637Z",
@@ -154,18 +147,15 @@ The preferred JSON object to be returned by the API should be structured as foll
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
     }
-  }],
-  "commentsCount": 1
-}
+  }]
+
 ```
 ### List of Tags
 ```source-json
-{
-  "tags": [
+ [
     "reactjs",
     "angularjs"
-  ]
-}
+ ]
 ```
 ### Errors and Status Codes
 If a request fails any validations, expect errors in the following format:
@@ -309,7 +299,7 @@ Authentication optional, will return multiple articles, ordered by most recent 
 
 ### Feed Articles
 
-`GET /api/articles/feed`
+`GET /api/articles`
 
 Can also take `limit` and `offset` query parameters like List Articles
 
@@ -317,25 +307,24 @@ Authentication required, will return multiple articles created by followed use
 
 ### Get Article
 
-`GET /api/articles/:slug`
+`GET /api/article/get/:slug`
 
 No authentication required, will return single article
 
 ### Create Article
 
-`POST /api/articles`
+`POST /api/article/create`
 
 Example request body:
 
 ```source-json
 {
-  "article": {
     "title": "How to train your dragon",
     "description": "Ever wonder how?",
     "body": "You have to believe",
     "tagList": ["reactjs", "angularjs", "dragons"]
-  }
 }
+
 ```
 
 Authentication required, will return an Article
@@ -366,7 +355,7 @@ The `slug` also gets updated when the `title` is changed
 
 ### Delete Article
 
-`DELETE /api/articles/:slug`
+`DELETE /api/article/delete/:slug`
 
 Authentication required
 
