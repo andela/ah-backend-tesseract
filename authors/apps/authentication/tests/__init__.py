@@ -1,6 +1,6 @@
 import os
 
-from ..models import User
+from authors.apps.authentication.models import User
 from rest_framework.test import APIClient
 from django.test import TestCase
 
@@ -41,15 +41,15 @@ class BaseTest(TestCase):
 
         self.register_response = self.client.post("/api/users/", self.user_data, format="json")
         self.login_response = self.client.post("/api/users/login/", self.login_data_email, format="json")
-        token = self.login_response.data["token"]
+        token = self.register_response.data["token"]
         self.client.credentials(HTTP_AUTHORIZATION=token)
 
         self.google_invalid_login = {
-            "provider":"google-oauth2",
+            "provider": "google-oauth2",
             "access_token": os.environ.get("GOOGLE_INVALID_TOKEN", None)
         }
         self.invalid_provider = {
-            "provider":"not_provider",
+            "provider": "not_provider",
             "access_token": os.environ.get("GOOGLE_INVALID_TOKEN", None)
         }
         self.facebook_invalid_login = {

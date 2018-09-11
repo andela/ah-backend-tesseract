@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'social_django',
 
     'authors.apps.authentication',
+    'authors.apps.articles',
     'authors.apps.core',
     'authors.apps.profiles',
 ]
