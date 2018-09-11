@@ -2,8 +2,8 @@ from django.utils.http import urlsafe_base64_encode
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from django.utils.encoding import force_bytes
-from . import BaseTest
-from ..models import User
+from authors.apps.authentication.tests import BaseTest
+from authors.apps.authentication.models import User
 
 
 class AuthenticationTests(BaseTest):
