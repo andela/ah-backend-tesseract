@@ -6,7 +6,7 @@ from authors.apps.articles.models import Article
 
 class ArticleTests(BaseTest):
     def test_getting_article_from_model(self):
-        article_instance = get_object_or_404(Article,title=self.article_data["title"])
+        article_instance = get_object_or_404(Article, title=self.article_data["title"])
         self.assertEqual(str(article_instance), self.article_data["title"])
 
     def test_article_creation_same_title(self):
