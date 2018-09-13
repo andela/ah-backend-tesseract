@@ -130,7 +130,8 @@ The preferred JSON object to be returned by the API should be structured as foll
       "bio": "I work at statefarm",
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
-    }
+    },
+    "replies": []
   }
 
 ```
@@ -146,7 +147,8 @@ The preferred JSON object to be returned by the API should be structured as foll
       "bio": "I work at statefarm",
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
-    }
+    },
+    "replies": []
   }]
 
 ```
@@ -394,11 +396,30 @@ Example request body:
 Authentication required, returns the created Comment
 Required field: `body`
 
+### Reply to a comment
+`POST /api/article/:slug/comments/:id/reply`
+
+Same request body as a comment on an article
+
+Authentication required, returns the reply
+
 ### Get Comments from an Article
 
 `GET /api/articles/:slug/comments`
 
 Authentication optional, returns multiple comments
+
+### Get all replies to a comment
+
+`GET /api/article/:slug/comments/:id/replies`
+
+Authentication optional, returns multiple comments
+
+### Update a comment
+
+`PUT /api/article/:slug/comments/:id`
+
+Authentication required, returns the updated comment
 
 ### Delete Comment
 

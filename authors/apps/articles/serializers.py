@@ -2,14 +2,16 @@ import re
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import Article, Like, Rating
+
+from .models import Article, Comment, Like, Rating
+
 from authors.apps.authentication.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email"]
+        fields = ["id", "username"]
 
 
 class GeneralRepresentation:
@@ -131,3 +133,57 @@ class LikeSerializer(serializers.ModelSerializer):
             self.instance.like = validated_data["like"]
             self.instance.save()
             self.action_performed = "updated"
+
+class CommentSerializer(serializers.Serializer):
+    body = serializers.CharField(required=True)
+    id = serializers.IntegerField(required=False)
+    created_at = serializers.DateTimeField(required=False)
+    updated_at = serializers.DateTimeField(required=False)
+    author = UserSerializer(required=False)
+    article = ArticleSerializer(required=False)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'article', 'author', 'body', 'created_at', 'updated_at']
+
+    def validate(self, data):
+        body = data.get('body', None)
+
+        if len(body) < 2:
+            raise serializers.ValidationError(
+                "Your comment must have at least 2 characters"
+            )
+
+        return {
+            'body': body,
+        }
+
+    def create(self, validated_data):
+        author = self.context["author"]
+        article = self.context["article"]
+        parent_comment = self.context["parent_comment"]
+        body = validated_data.get('body')
+
+        return Comment.objects.create(body=body, author=author, article=article, parent_comment=parent_comment)
+
+    def update(self, instance, validated_data):
+        instance.body = validated_data.get('body')
+        instance.save()
+        return instance
+
+
+class ReplySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'created_at', 'updated_at', 'body', 'author']
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    author = UserSerializer()
+    replies = ReplySerializer(source='comment_set', many=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'created_at', 'updated_at', 'body', 'author', 'replies']
+        depth = 1

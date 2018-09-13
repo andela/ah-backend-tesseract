@@ -43,6 +43,13 @@ class Article(models.Model):
         return 0 if count == 0 else int(total_ratings/count)
 
 
+    def comments_on_article(self):
+        """
+        Returns only comments without a parent comment.
+        """
+        return self.comment_set.filter(parent_comment=None)
+
+
 class Rating(models.Model):
 
     date_created = models.DateTimeField(auto_now_add=True)
@@ -55,8 +62,18 @@ class Rating(models.Model):
 
     rated_by = models.ForeignKey(User, blank=False, null=False,  on_delete=models.CASCADE)
 
+
 class Like(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     like = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Comment(models.Model):
+    body = models.TextField()
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

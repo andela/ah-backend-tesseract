@@ -1,8 +1,5 @@
-import os
-
-from authors.apps.authentication.models import User
 from rest_framework.test import APIClient
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 
 class BaseTest(TestCase):
@@ -14,9 +11,9 @@ class BaseTest(TestCase):
                           }
 
         self.second_user_data = {"user": {"username": "Jacob123426536",
-                                   "email": "jake@jakeg.jake234383",
-                                   "password": "jakejakeh1238738"}
-                          }
+                                          "email": "jake@jakeg.jake234383",
+                                          "password": "jakejakeh1238738"}
+                                 }
 
         self.article_data = {
             "title": "this is my title",
@@ -76,6 +73,7 @@ class BaseTest(TestCase):
                                                            format="json")
 
         self.client.credentials(HTTP_AUTHORIZATION=self.register_second_user_response.data["token"])
+
         self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1",
                                                               self.article_update_data, format="json")
 
@@ -98,6 +96,9 @@ class BaseTest(TestCase):
 
         self.same_like_article_liking = self.client.post("/api/article/like", self.article_dislike_data, format="json")
 
+        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1",
+                                                              self.article_update_data,
+                                                              format="json")
 
         # Rate an article
         # Different user rates an article
@@ -105,3 +106,71 @@ class BaseTest(TestCase):
         self.rate_article = self.client.post('/api/article/rating/', self.test_valid_ratings, format="json")
         self.client.credentials(HTTP_AUTHORIZATION=self.register_response.data["token"])
         self.rate_article_again = self.client.post('/api/article/rating/', self.test_valid_ratings, format="json")
+
+
+class BaseTransactionTest(TransactionTestCase):
+    reset_sequences = True
+
+    def setUp(self):
+        self.user1 = {
+            "user":
+                {"username": "Jacob1234",
+                 "email": "jake@jakeg.jake234",
+                 "password": "jakejakeh123"
+                 }
+        }
+
+        self.user2 = {
+            "user": {
+                "username": "Jacob123426536",
+                "email": "jake@jakeg.jake234383",
+                "password": "jakejakeh1238738"
+            }
+        }
+        self.comment = {
+            "comment": {
+                "body": "This is a comment"
+            }
+        }
+
+        self.updated_comment = {
+            "comment": {
+                "body": "Update"
+            }
+        }
+
+        self.reply_to_comment = {
+            "comment": {
+                "body": "This is a reply to a comment"
+            }
+        }
+
+        self.other_article = {
+            "title": "how to train a cat",
+            "description": "cats are playful",
+            "body": "Ever wanted to know?"
+        }
+
+        self.invalid_comment_data = {
+            "comment": {
+                "body": "l"
+            }
+        }
+
+        self.client = APIClient()
+
+        self.register_user1 = self.client.post("/api/users/", self.user1, format="json")
+        token = self.register_user1.data["token"]
+        self.client.credentials(HTTP_AUTHORIZATION=token)
+
+        self.register_user2 = self.client.post("/api/users/", self.user2, format="json")
+        self.token2 = self.register_user2.data["token"]
+
+        self.create_other_article = self.client.post("/api/article/create", self.other_article, format="json")
+        self.slug = "how-to-train-a-cat"
+        self.comment_on_article = self.client.post("/api/article/" + self.slug + "/comments",
+                                                   self.comment, format="json")
+        self.get_comments = self.client.get("/api/article/" + self.slug + "/comments")
+        self.get_replies = self.client.get("/api/article/" + self.slug + "/comments/1/replies")
+        self.reply = self.client.post("/api/article/" + self.slug + "/comments/1/reply", self.reply_to_comment,
+                                      format="json")
