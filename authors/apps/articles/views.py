@@ -1,21 +1,28 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from authors.apps import ApplicationJSONRenderer, update_data_with_user
+
+from rest_framework.exceptions import PermissionDenied
+
 from authors.apps.articles.serializers import (ArticlesSerializer,
                                                ArticleSerializer,
+                                               CommentListSerializer,
+                                                CommentSerializer,
                                                RatingSerializer,
                                                LikeSerializer,
                                                DeleteArticleSerializer)
 
-from .models import Article
+
+from .helpers import find_instance, find_parent_comment
+from .models import Article, Comment
 
 
 class ArticlesListAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     serializer_class = ArticlesSerializer
 
     def get(self, request):
@@ -25,7 +32,7 @@ class ArticlesListAPIView(APIView):
 
 
 class ArticleAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly ,)
     renderer_classes = (ApplicationJSONRenderer,)
     serializer_class = ArticleSerializer
     detail_serializer = ArticlesSerializer
@@ -39,9 +46,9 @@ class ArticleAPIView(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self,request, slug):
+    def get(self, request, slug):
         serializer = self.detail_serializer()
-        serializer.instance = get_object_or_404(Article, slug=slug)
+        serializer.instance = find_instance(Article, slug)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, slug):
@@ -57,6 +64,7 @@ class ArticleAPIView(APIView):
         article_data = request.data
         article_data["author"] = request.user.id
         serializer = self.serializer_class(data=article_data)
+        serializer.instance = find_instance(Article, slug)
         try:
             serializer.instance = Article.objects.get(slug=slug)
         except Article.DoesNotExist:
@@ -82,6 +90,68 @@ class ArticleRatingAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class CommentAPIView(APIView):
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    comment_serializer_class = CommentSerializer
+    comment_list_serializer_class = CommentListSerializer
+
+    def post(self, request, slug, parent_comment_id=None):
+        parent_comment = find_parent_comment(parent_comment_id)
+
+        comment_body = request.data.get('comment', {})
+
+        article = find_instance(Article, slug)
+        serializer = self.comment_serializer_class(data=comment_body, context={'author': request.user,
+                                                                               'article': article,
+                                                                               'parent_comment': parent_comment})
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({"comment": serializer.data}, status=status.HTTP_201_CREATED)
+
+    def get(self, request, slug, parent_comment_id=None):
+        parent_comment = find_parent_comment(parent_comment_id)
+        article = find_instance(Article, slug)
+
+        if parent_comment:
+            comments = parent_comment.comment_set.all()
+            key = "replies_to_comment"
+        else:
+            comments = article.comments_on_article()
+            key = "comments"
+
+        serializer = self.comment_list_serializer_class(comments, many=True)
+        return Response({key: serializer.data}, status.HTTP_200_OK)
+
+    def delete(self, request, slug, comment_id):
+        find_instance(Article, slug)
+        comment = find_instance(Comment, comment_id)
+
+        if request.user.is_superuser or request.user.id == comment.author.id:
+            comment.delete()
+            return Response({"message": "Comment deleted successfully"}, status.HTTP_200_OK)
+        else:
+            raise PermissionDenied("You are not authorized to delete this comment")
+
+    def put(self, request, slug, comment_id):
+        comment_body = request.data.get('comment', {})
+
+        article = find_instance(Article, slug)
+        serializer = self.comment_serializer_class(data=comment_body, context={'author': request.user,
+                                                                               'article': article})
+        comment = find_instance(Comment, comment_id)
+        if comment.author.id != request.user.id:
+            raise PermissionDenied("You're not authorized to update this article")
+        serializer.instance = find_instance(Comment, comment_id)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            "comment": serializer.data,
+            "message": "comment updated successfully"
+        }, status.HTTP_200_OK)
+
 class LikeArticleAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     renderer_classes = (ApplicationJSONRenderer,)
@@ -89,7 +159,7 @@ class LikeArticleAPIView(APIView):
 
     def post(self, request):
         slug = request.data["article"]
-        article = get_object_or_404(Article, slug=slug)
+        article = find_instance(Article, slug)
         like = request.data["like"]
         user = request.user.id
         data = {"user": user, "article": article.id, "like": like}

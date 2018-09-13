@@ -1,8 +1,12 @@
 from django.urls import path
+
 from .views import (ArticleAPIView,
                     ArticlesListAPIView,
                     ArticleRatingAPIView,
-                    LikeArticleAPIView)
+                    LikeArticleAPIView,
+                    CommentAPIView
+                    )
+
 
 urlpatterns = [
     path("articles", ArticlesListAPIView.as_view(), name="view_articles"),
@@ -13,4 +17,10 @@ urlpatterns = [
     path("article/like", LikeArticleAPIView.as_view()),
     path("article/rating/", ArticleRatingAPIView.as_view(), name="rate_article"),
 
+    path("article/<str:slug>/comments", CommentAPIView.as_view(), name="add_or_get_comments"),
+    path("article/<str:slug>/comments/<int:comment_id>", CommentAPIView.as_view(), name="update_or_delete_comment"),
+    path("article/<str:slug>/comments/<int:parent_comment_id>/reply", CommentAPIView.as_view(),
+         name="reply_to_comment"),
+    path("article/<str:slug>/comments/<int:parent_comment_id>/replies", CommentAPIView.as_view(),
+         name="get_all_replies"),
     ]
