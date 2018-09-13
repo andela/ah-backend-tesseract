@@ -37,9 +37,17 @@ class ArticleTests(BaseTest):
         self.assertEqual(get_update_response.status_code, status.HTTP_200_OK)
         self.assertEqual(get_update_response.data["title"], "this is the new title guys")
 
+    def test_updating_non_existing_article(self):
+        get_update_response = self.update_non_existing_article
+        self.assertEqual(get_update_response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_update_article_by_different_user(self):
         get_update_response = self.update_article_different_owner
         self.assertEqual(get_update_response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete_article_by_different_user(self):
+        delete_article_response = self.delete_article_different_user
+        self.assertEqual(delete_article_response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_delete_article(self):
         delete_article_response = self.delete_article

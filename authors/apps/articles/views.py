@@ -7,9 +7,11 @@ from rest_framework.views import APIView
 from authors.apps import ApplicationJSONRenderer, update_data_with_user
 from authors.apps.articles.serializers import (ArticlesSerializer,
                                                ArticleSerializer,
-                                               DeleteArticleSerializer, RatingSerializer)
+                                               RatingSerializer,
+                                               LikeSerializer,
+                                               DeleteArticleSerializer)
 
-from .models import Article, Rating
+from .models import Article
 
 
 class ArticlesListAPIView(APIView):
@@ -58,7 +60,7 @@ class ArticleAPIView(APIView):
         try:
             serializer.instance = Article.objects.get(slug=slug)
         except Article.DoesNotExist:
-            raise ValueError("Article does not exist")
+            return Response({"message": "article does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -79,3 +81,24 @@ class ArticleRatingAPIView(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+class LikeArticleAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (ApplicationJSONRenderer,)
+    like_serializer = LikeSerializer
+
+    def post(self, request):
+        slug = request.data["article"]
+        article = get_object_or_404(Article, slug=slug)
+        like = request.data["like"]
+        user = request.user.id
+        data = {"user": user, "article": article.id, "like": like}
+
+        serializer = self.like_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        if serializer.action_performed == "created":
+            action_status = status.HTTP_201_CREATED
+        else:
+            action_status = status.HTTP_200_OK
+        return Response(serializer.data, status=action_status)
