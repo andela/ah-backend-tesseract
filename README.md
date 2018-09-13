@@ -359,6 +359,24 @@ The `slug` also gets updated when the `title` is changed
 
 Authentication required
 
+
+### Rating Article
+
+`POST /api/article/rating/`
+
+Example request body:
+
+```source-json
+{
+  "article": "Did-you-train-your-dragon?"
+  "rating": 3
+}
+```
+
+Authentication required
+
+Required fields: `article`, `rating`
+
 ### Add Comments to an Article
 
 `POST /api/articles/:slug/comments`

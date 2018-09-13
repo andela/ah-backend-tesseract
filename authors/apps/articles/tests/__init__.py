@@ -36,6 +36,20 @@ class BaseTest(TestCase):
             "body": "this is the body"
         }
 
+        self.test_valid_ratings = {
+            "article": "this-is-my-title-1",
+            "rating": 3
+        }
+        self.test_invalid_ratings = {
+            "article": "this-is-my-title-1",
+            "rating": 9
+        }
+
+        self.test_invalid_article_ratings = {
+            "article": "this-is-my-title-1-invalid",
+            "rating": 3
+        }
+
         self.client = APIClient()
 
         self.register_response = self.client.post("/api/users/", self.user_data, format="json")
@@ -59,3 +73,10 @@ class BaseTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=self.register_second_user_response.data["token"])
         self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1", self.article_update_data,
                                               format="json")
+
+        # Rate an article
+        # Different user rates an article
+
+        self.rate_article = self.client.post('/api/article/rating/', self.test_valid_ratings, format="json")
+        self.client.credentials(HTTP_AUTHORIZATION=self.register_response.data["token"])
+        self.rate_article_again = self.client.post('/api/article/rating/', self.test_valid_ratings, format="json")

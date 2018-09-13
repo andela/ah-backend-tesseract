@@ -4,13 +4,12 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
-from authors.apps import ApplicationJSONRenderer
+from authors.apps import ApplicationJSONRenderer, update_data_with_user
 from authors.apps.articles.serializers import (ArticlesSerializer,
                                                ArticleSerializer,
-                                               DeleteArticleSerializer)
+                                               DeleteArticleSerializer, RatingSerializer)
 
-from .models import Article
+from .models import Article, Rating
 
 
 class ArticlesListAPIView(APIView):
@@ -64,3 +63,19 @@ class ArticleAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ArticleRatingAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (ApplicationJSONRenderer,)
+    serializer_class = RatingSerializer
+    article_serializer = ArticlesSerializer
+
+    def post(self, request):
+
+        data = update_data_with_user(request)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+

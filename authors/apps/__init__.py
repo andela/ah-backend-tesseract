@@ -14,3 +14,10 @@ class ApplicationJSONRenderer(JSONRenderer):
             return super(ApplicationJSONRenderer, self).render(data)
 
         return json.dumps(data)
+
+
+def update_data_with_user(request):
+    data = request.data
+    data["rated_by"] = request.user.id
+    return data
+

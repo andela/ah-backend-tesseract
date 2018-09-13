@@ -30,3 +30,27 @@ class Article(models.Model):
         if not self.slug:
             self.slug = self.get_unique_slug()
         super().save(*args, **kwargs)
+
+    @property
+    def average_rating(self):
+
+        total_ratings = 0
+        count = 0
+        ratings = Rating.objects.filter(article=self)
+        for rate in ratings:
+            total_ratings += rate.rating
+            count += 1
+        return 0 if count == 0 else int(total_ratings/count)
+
+
+class Rating(models.Model):
+
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    date_updated = models.DateTimeField(auto_now=True)
+
+    article = models.ForeignKey(Article, blank=False, null=False, on_delete=models.CASCADE)
+
+    rating = models.IntegerField(blank=False, null=False, default=0)
+
+    rated_by = models.ForeignKey(User, blank=False, null=False,  on_delete=models.CASCADE)
