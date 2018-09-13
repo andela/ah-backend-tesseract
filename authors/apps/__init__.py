@@ -16,8 +16,8 @@ class ApplicationJSONRenderer(JSONRenderer):
         return json.dumps(data)
 
 
-def update_data_with_user(request):
+def update_data_with_user(request, key):
     data = request.data
-    data["rated_by"] = request.user.id
+    data[key] = request.user.id
     return data
 

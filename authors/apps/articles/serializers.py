@@ -2,7 +2,8 @@ import re
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import Article, Rating
+from rest_framework.exceptions import NotFound, NotAuthenticated
+from .models import Article, Rating, FavoriteArticle
 from authors.apps.authentication.models import User
 
 
@@ -45,7 +46,7 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
             instance.save()
             return instance
         else:
-            raise serializers.ValidationError("You are not Authorised to edit this article")
+            raise NotAuthenticated("You are not Authorised to edit this article")
 
 
 class DeleteArticleSerializer(serializers.Serializer):
@@ -87,7 +88,7 @@ class RatingSerializer(serializers.Serializer):
         try:
             self.article = Article.objects.get(slug=data["article"])
         except Article.DoesNotExist:
-            raise serializers.ValidationError("Article you are trying to rate does not exist ")
+            raise NotFound("Article you are trying to rate does not exist ")
 
         if not re.match("[1-5]", str(data["rating"])):
             raise serializers.ValidationError(
@@ -106,3 +107,57 @@ class RatingSerializer(serializers.Serializer):
         data["rated_by"] = user
 
         return data
+
+
+class FavoriteArticleSerializer(serializers.Serializer):
+
+    article = serializers.SlugField()
+
+    favorite = serializers.BooleanField()
+
+    user = serializers.CharField()
+
+    def create(self, data):
+        _data = self.create_or_update(data)
+
+        if isinstance(_data, FavoriteArticle):
+            raise serializers.ValidationError("Please use PUT to update the favorite instead of POST")
+        else:
+            return FavoriteArticle.favorites.create(**_data)
+
+    def update(self, instance, data):
+        self.create_or_update(data)
+        instance.favorite = data["favorite"]
+        instance.save()
+        return instance
+
+    def create_or_update(self, data):
+        data = self.find_user_article(data)
+        query_set = FavoriteArticle.favorites.filter(article=self.article, user=self.user)
+        if query_set.exists():
+            instance = query_set.get()
+            self.handle_existence(instance, data)
+            return instance
+        return data
+
+    def find_user_article(self, data):
+        try:
+            self.article = Article.objects.get(slug=data["article"])
+            self.user = User.objects.get(id=data["user"])
+        except Article.DoesNotExist:
+            raise NotFound("Article with that slug does not exist")
+        except User.DoesNotExist:
+            raise NotFound("User does not exist")
+
+        data["article"] = self.article
+        data["user"] = self.user
+
+        return data
+
+    @staticmethod
+    def handle_existence(instance, data):
+        if instance.favorite == data["favorite"]:
+            raise serializers.ValidationError("The article is already in your favorites") \
+                if instance.favorite \
+                else \
+                serializers.ValidationError("The article is already not in your favorites")

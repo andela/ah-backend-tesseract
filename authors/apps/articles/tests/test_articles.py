@@ -39,7 +39,7 @@ class ArticleTests(BaseTest):
 
     def test_update_article_by_different_user(self):
         get_update_response = self.update_article_different_owner
-        self.assertEqual(get_update_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(get_update_response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_article(self):
         delete_article_response = self.delete_article
