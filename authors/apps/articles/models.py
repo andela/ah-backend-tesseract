@@ -54,3 +54,9 @@ class Rating(models.Model):
     rating = models.IntegerField(blank=False, null=False, default=0)
 
     rated_by = models.ForeignKey(User, blank=False, null=False,  on_delete=models.CASCADE)
+
+class Like(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    like = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)

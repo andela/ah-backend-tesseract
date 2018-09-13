@@ -70,9 +70,34 @@ class BaseTest(TestCase):
         self.delete_article_with_no_slug = self.client.delete("/api/article/delete/", format="json")
 
         self.register_second_user_response = self.client.post("/api/users/", self.second_user_data, format="json")
+
+        self.update_non_existing_article = self.client.put("/api/article/edit/this-is-my-title-1-fake",
+                                                           self.article_update_data,
+                                                           format="json")
+
         self.client.credentials(HTTP_AUTHORIZATION=self.register_second_user_response.data["token"])
-        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1", self.article_update_data,
-                                              format="json")
+        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1",
+                                                              self.article_update_data, format="json")
+
+        self.delete_article_different_user = self.client.delete("/api/article/delete/this-is-my-title-1",
+                                                                format="json")
+
+        self.article_like_data = {
+            "article": "this-is-my-title-1",
+            "like": True
+        }
+
+        self.test_article_liking = self.client.post("/api/article/like", self.article_like_data, format="json")
+
+        self.article_dislike_data = {
+            "article": "this-is-my-title-1",
+            "like": False
+        }
+
+        self.article_dislike = self.client.post("/api/article/like", self.article_dislike_data, format="json")
+
+        self.same_like_article_liking = self.client.post("/api/article/like", self.article_dislike_data, format="json")
+
 
         # Rate an article
         # Different user rates an article

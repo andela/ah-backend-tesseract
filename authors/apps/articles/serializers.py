@@ -2,7 +2,7 @@ import re
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import Article, Rating
+from .models import Article, Like, Rating
 from authors.apps.authentication.models import User
 
 
@@ -56,8 +56,6 @@ class DeleteArticleSerializer(serializers.Serializer):
         author = data.get('author', None)
         slug = data.get("slug", None)
 
-        if not slug:
-            raise serializers.ValidationError("article slug needed for delete action")
         instance = get_object_or_404(Article, slug=slug)
         if instance:
             if instance.author.id == author:
@@ -106,3 +104,30 @@ class RatingSerializer(serializers.Serializer):
         data["rated_by"] = user
 
         return data
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    action_performed = "created"
+
+    class Meta:
+        model = Like
+        fields = ['user', 'article', 'like']
+
+    def create(self, validated_data):
+
+        try:
+            self.instance = Like.objects.filter(article=validated_data["article"].id, user=validated_data["user"].id)[0:1].get()
+        except Like.DoesNotExist:
+            return Like.objects.create(**validated_data)
+
+        self.perform_update(validated_data)
+        return self.instance
+
+    def perform_update(self, validated_data):
+        if self.instance.like == validated_data["like"]:
+            self.instance.delete()
+            self.action_performed = "deleted"
+        else:
+            self.instance.like = validated_data["like"]
+            self.instance.save()
+            self.action_performed = "updated"
