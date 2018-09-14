@@ -147,6 +147,61 @@ class UserSerializer(serializers.ModelSerializer):
         write_only=True
     )
 
+
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'password', 'token')
+        read_only_fields = ('username', 'email')
+        # The `read_only_fields` option is an alternative for explicitly
+        # specifying the field with `read_only=True` like we did for password
+        # above. The reason we want to use `read_only_fields` here is because
+        # we don't need to specify anything else about the field. For the
+        # password field, we needed to specify the `min_length` and 
+        # `max_length` properties too, but that isn't the case for the token
+        # field.
+
+    def update(self, instance, validated_data):
+        """Performs an update on a User."""
+
+        # Passwords should not be handled with `setattr`, unlike other fields.
+        # This is because Django provides a function that handles hashing and
+        # salting passwords, which is important for security. What that means
+        # here is that we need to remove the password field from the
+        # `validated_data` dictionary before iterating over it.
+        password = validated_data.pop('password', None)
+
+
+        for (key, value) in validated_data.items():
+            # For the keys remaining in `validated_data`, we will set them on
+            # the current `User` instance one at a time.
+            setattr(instance, key, value)
+
+        if password is not None:
+            # `.set_password()` is the method mentioned above. It handles all
+            # of the security stuff that we shouldn't be concerned with.
+            instance.set_password(password)
+
+        # Finally, after everything has been updated, we must explicitly save
+        # the model. It's worth pointing out that `.set_password()` does not
+        # save the model.
+        instance.save()
+
+
+        return instance
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Handles serialization and deserialization of User objects."""
+
+    # Passwords must be at least 8 characters, but no more than 128
+    # characters. These values are the default provided by Django. We could
+    # change them, but that would create extra work while introducing no real
+    # benefit, so let's just stick with the defaults.
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+
     profile = AuthenticatedProfileSerializer(write_only=True)
 
     bio = serializers.CharField(source='profile.bio', read_only=True)
@@ -156,13 +211,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password', 'profile','bio', 'image', 'location', 'occupation')
+        fields = ('email', 'username', 'password', 'profile','bio', 'image', 'location', 'token', 'occupation')
         read_only_fields = ('username', 'email')
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password
         # above. The reason we want to use `read_only_fields` here is because
         # we don't need to specify anything else about the field. For the
-        # password field, we needed to specify the `min_length` and 
+        # password field, we needed to specify the `min_length` and
         # `max_length` properties too, but that isn't the case for the token
         # field.
 
