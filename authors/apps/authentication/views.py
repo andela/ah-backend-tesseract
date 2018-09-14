@@ -10,7 +10,8 @@ from authors.apps import ApplicationJSONRenderer as UserJSONRenderer
 from social_core.exceptions import MissingBackend
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    ComfirmPasswordResetSerializer, RequestPasswordResetSerializer, SocialAuthenticationSerializer)
+    ComfirmPasswordResetSerializer, RequestPasswordResetSerializer, SocialAuthenticationSerializer,
+    UserProfileSerializer)
 from .models import User
 from .backends import JWTAuthentication
 from .utils import custom_send_mail
@@ -74,7 +75,7 @@ class LoginAPIView(APIView):
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
-    serializer_class = UserSerializer
+    serializer_class = UserProfileSerializer
 
     def retrieve(self, request, *args, **kwargs):
         # There is nothing to validate or save here. Instead, we just want the
