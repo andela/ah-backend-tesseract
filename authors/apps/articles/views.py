@@ -6,19 +6,19 @@ from rest_framework.views import APIView
 
 from authors.apps import ApplicationJSONRenderer, update_data_with_user
 
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 
 from authors.apps.articles.serializers import (ArticlesSerializer,
                                                ArticleSerializer,
                                                CommentListSerializer,
-                                                CommentSerializer,
+                                               CommentSerializer,
                                                RatingSerializer,
                                                LikeSerializer,
-                                               DeleteArticleSerializer)
+                                               DeleteArticleSerializer, FavoriteArticleSerializer)
 
 
 from .helpers import find_instance, find_parent_comment
-from .models import Article, Comment
+from .models import Article, Comment, FavoriteArticle
 
 
 class ArticlesListAPIView(APIView):
@@ -83,11 +83,41 @@ class ArticleRatingAPIView(APIView):
 
     def post(self, request):
 
-        data = update_data_with_user(request)
-        serializer = self.serializer_class(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer = perform_post(request, 'rated_by', self.serializer_class)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class FavoriteArticleAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (ApplicationJSONRenderer,)
+    serializer_class = FavoriteArticleSerializer
+
+    def post(self, request):
+        return Response(perform_post(request, 'user', self.serializer_class).data, status=status.HTTP_201_CREATED)
+
+    def put(self, request):
+        data = update_data_with_user(request, 'user')
+        try:
+            article = Article.objects.get(slug=data["article"])
+            instance = FavoriteArticle.favorites.get(article=article, user=request.user)
+        except Article.DoesNotExist:
+            raise NotFound("Article with that slug does not exist")
+        except FavoriteArticle.DoesNotExist:
+            raise NotFound("Use POST to favorite or unfavorite this article")
+
+        serializer = self.serializer_class(data=data)
+        serializer.instance = instance
+        serializer.is_valid(raise_exception=True)
+        serializer.update(instance, data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def perform_post(request, user_key, serializer_class):
+    data = update_data_with_user(request, user_key)
+    serializer = serializer_class(data=data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return serializer
 
 
 class CommentAPIView(APIView):
@@ -151,6 +181,7 @@ class CommentAPIView(APIView):
             "comment": serializer.data,
             "message": "comment updated successfully"
         }, status.HTTP_200_OK)
+
 
 class LikeArticleAPIView(APIView):
     permission_classes = (IsAuthenticated,)

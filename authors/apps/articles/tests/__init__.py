@@ -54,6 +54,11 @@ class BaseTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=token)
 
         self.create_article = self.client.post("/api/article/create", self.article_data, format="json")
+
+        self.favorite_invalid_article = self.client.post("/api/article/favorite",
+                                                         {"article": "this-is-my-title_invalid", "favorite": True},
+                                                         format='json')
+
         self.create_duplicate_article = self.client.post("/api/article/create", self.duplicate_article, format="json")
         self.get_all_articles = self.client.get("/api/articles", format="json")
         self.get_article = self.client.get("/api/article/get/this-is-my-title", format="json")
