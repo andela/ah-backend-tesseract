@@ -44,6 +44,11 @@ class AuthenticationTests(BaseTest):
     def test_user_login_with_email(self):
         self.assertEqual(self.login_response.status_code, status.HTTP_200_OK)
 
+    def test_user_login_without_email_and_password(self):
+        response = self.client.post("/api/users/login/",
+                                    {"user": {}}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_login_with_invalid_credentials(self):
         response = self.client.post("/api/users/login/", self.unregistered_user_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -70,12 +75,12 @@ class AuthenticationTests(BaseTest):
         response = self.client.post('/api/password-reset/', {"email": "mail@me.com"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_request_password_reset_with_an_empty_email(self):
+    def test_request_password_reset_with_an_unregistered_email(self):
         response = self.client.post('/api/password-reset/', {"email": "uregistered@invalid.com"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_request_password_reset_with_an_unregistered_email(self):
-        response = self.client.post('/api/password-reset/', {"email": " "}, format="json")
+    def test_request_password_reset_with_an_empty_email(self):
+        response = self.client.post('/api/password-reset/', {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_redirect_to_password_reset(self):
@@ -97,3 +102,5 @@ class AuthenticationTests(BaseTest):
         self.client.get('/api/password-reset/<str:token>/', format="json")
         response = self.client.put('/api/password-reset/done/', data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+

@@ -4,8 +4,8 @@ from .views import (ArticleAPIView,
                     ArticlesListAPIView,
                     ArticleRatingAPIView,
                     LikeArticleAPIView,
-                    CommentAPIView
-                    )
+                    CommentAPIView,
+                    FavoriteArticleAPIView)
 
 
 urlpatterns = [
@@ -23,4 +23,5 @@ urlpatterns = [
          name="reply_to_comment"),
     path("article/<str:slug>/comments/<int:parent_comment_id>/replies", CommentAPIView.as_view(),
          name="get_all_replies"),
+    path("article/favorite", FavoriteArticleAPIView.as_view(), name="favorite_article"),
     ]

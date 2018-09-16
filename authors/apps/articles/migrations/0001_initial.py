@@ -61,4 +61,18 @@ class Migration(migrations.Migration):
                 ('rated_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
+
+        migrations.CreateModel(
+            name='FavoriteArticle',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('favorited_at', models.DateTimeField(auto_now_add=True)),
+                ('favorite', models.BooleanField(default=False, name='favorite')),
+                ('article', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='articles.Article')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+            managers=[
+                ('favorites', django.db.models.manager.Manager()),
+            ],
+        ),
     ]

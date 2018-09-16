@@ -77,3 +77,16 @@ class Comment(models.Model):
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class FavoriteArticle(models.Model):
+    favorite = models.BooleanField(default=False)
+
+    article = models.ForeignKey(Article, blank=False, null=False, on_delete=models.CASCADE)
+
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE)
+
+    favorited_at = models.DateTimeField(auto_now_add=True)
+
+    favorites = models.Manager()
+

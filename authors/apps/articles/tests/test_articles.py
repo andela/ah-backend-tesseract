@@ -47,7 +47,7 @@ class ArticleTests(BaseTest):
 
     def test_delete_article_by_different_user(self):
         delete_article_response = self.delete_article_different_user
-        self.assertEqual(delete_article_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(delete_article_response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_article(self):
         delete_article_response = self.delete_article
