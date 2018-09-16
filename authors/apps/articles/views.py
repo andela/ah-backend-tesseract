@@ -1,9 +1,12 @@
+
 from rest_framework import status, generics
 
+from rest_framework import status
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.filters import SearchFilter
 from authors.apps import ApplicationJSONRenderer, update_data_with_user
 
 from rest_framework.exceptions import PermissionDenied, NotFound
@@ -23,6 +26,27 @@ from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+class searchArticlesListAPIView(ListAPIView):
+    queryset = Article.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = ArticlesSerializer
+
+    filter_backends = [SearchFilter]
+    search_fields = ['title', 'author__username', 'tags__tag']
+
+    def get_queryset(self):
+
+        queryset = self.queryset
+        author = self.request.query_params.get('author', None)
+        if author is not None:
+            queryset = queryset.filter(author__username=author)
+        title = self.request.query_params.get('title', None)
+        if title is not None:
+            queryset = queryset.filter(title__icontains=title)
+        tag = self.request.query_params.get('tag', None)
+        if tag is not None:
+            queryset = queryset.filter(tags__tag__icontains=tag)
+        return queryset
 
 class ArticlesListAPIView(APIView):
     permission_classes = (AllowAny,)

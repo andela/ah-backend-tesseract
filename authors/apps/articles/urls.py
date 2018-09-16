@@ -7,7 +7,9 @@ from .views import (ArticleAPIView,
                     CommentAPIView,
                     ReportArticleAPIView,
                     FavoriteArticleAPIView,
-                    TagListAPIView)
+                    TagListAPIView,
+                    searchArticlesListAPIView
+                    )
 
 
 urlpatterns = [
@@ -27,6 +29,6 @@ urlpatterns = [
          name="get_all_replies"),
     path("article/favorite", FavoriteArticleAPIView.as_view(), name="favorite_article"),
     path("article/<str:slug>/report", ReportArticleAPIView.as_view(), name="report_article"),
-
-    path("article/tags", TagListAPIView.as_view(), name="article-tags")
+    path("article/tags", TagListAPIView.as_view(), name="article-tags"),
+    path("articles/search/", searchArticlesListAPIView.as_view(), name="search_articles"),
     ]
