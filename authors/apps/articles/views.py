@@ -20,6 +20,8 @@ from authors.apps.articles.serializers import (ArticlesSerializer,
 from .helpers import find_instance, find_parent_comment
 from .models import Article, Comment, FavoriteArticle
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 class ArticlesListAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -27,8 +29,21 @@ class ArticlesListAPIView(APIView):
 
     def get(self, request):
         articles = Article.objects.all()
+        paginator = Paginator(articles, 5)  # show 5 articles at a time.
+        page = request.GET.get('page')
+        try:
+            articles = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page
+            articles = paginator.page(1)
+        except EmptyPage:
+            # if page is out of range, deliver last page of results
+            articles = paginator.page(paginator.num_pages)
+
         serializer = self.serializer_class(articles, many=True)
-        return Response({"articles": serializer.data}, status=status.HTTP_200_OK)
+        return Response({"articles": serializer.data,
+                         "number_of_pages": paginator.num_pages,
+                         "number_of_articles": paginator.count}, status=status.HTTP_200_OK)
 
 
 class ArticleAPIView(APIView):

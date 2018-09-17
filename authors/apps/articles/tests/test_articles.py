@@ -57,3 +57,7 @@ class ArticleTests(BaseTest):
         self.client.credentials(HTTP_AUTHORIZATION="fake token")
         create_response = self.client.post("/api/article/create", self.article_data, format="json")
         self.assertEqual(create_response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_out_of_range_page_number(self):
+        self.paginated_response = self.client.get('/api/articles?page=999')
+        self.assertEqual(self.paginated_response.status_code, status.HTTP_200_OK)
