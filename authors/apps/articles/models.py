@@ -42,12 +42,14 @@ class Article(models.Model):
             count += 1
         return 0 if count == 0 else int(total_ratings/count)
 
-
     def comments_on_article(self):
         """
         Returns only comments without a parent comment.
         """
         return self.comment_set.filter(parent_comment=None)
+
+    class Meta:
+        ordering = ['id']
 
 
 class Rating(models.Model):
