@@ -71,3 +71,8 @@ class AuthenticationTests(BaseTest):
     def test_unfollow_an_invalid_profile(self):
         response = self.client.delete('/api/profiles/ivalid_username/follow', format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_fetching_list_of_user_profiles(self):
+        response = self.client.get('/api/profiles/users', format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, "users")

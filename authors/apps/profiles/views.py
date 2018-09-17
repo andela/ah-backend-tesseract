@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
+
 from .models import Profile
 from .renderers import ProfileJSONRenderer
 from .serializers import ProfileSerializer, AuthenticatedProfileSerializer
@@ -15,6 +16,7 @@ class ProfileAPIView(RetrieveAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (ProfileJSONRenderer,)
     serializer_class = ProfileSerializer
+
     def retrieve(self, request, username, *args, **kwargs):
 
         profile =get_object_or_404(Profile, user__username=username)
@@ -38,7 +40,8 @@ class AuthentivatedProfileRetrieveAPIView(RetrieveAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class FollowersAPIview(APIView):
+
+class FollowersAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     renderer_classes = (ProfileJSONRenderer,)
     serializer_class = AuthenticatedProfileSerializer
@@ -77,3 +80,13 @@ class FollowersAPIview(APIView):
         })
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UsersListAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = AuthenticatedProfileSerializer
+
+    def get(self, request):
+        users_profiles = Profile.objects.all().exclude(pk=request.user.id)
+        serializer = self.serializer_class(users_profiles, many=True)
+        return Response({"users": serializer.data}, status=status.HTTP_200_OK)
