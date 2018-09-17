@@ -21,6 +21,9 @@ def find_instance(model, search_key):
 def find_parent_comment(parent_comment_id):
     if parent_comment_id:
         parent_comment = find_instance(Comment, parent_comment_id)
+        if parent_comment.parent_comment is not None:
+            # This ensures that any comment made to a reply is only nested one level deep
+            parent_comment = parent_comment.parent_comment
     else:
         parent_comment = None
 
