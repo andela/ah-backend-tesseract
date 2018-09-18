@@ -60,3 +60,17 @@ class BaseTest(TestCase):
             "provider": "facebook",
             "access_token": os.environ.get("FACEBOOK_DEBUG_TOKEN", None)
         }
+        self.twitter_login = {
+            "provider": "twitter",
+            "access_token": os.environ.get("TWITTER_ACCESS_TOKEN", None),
+            "access_token_secret": os.environ.get("TWITTER_ACCESS_SECRET", None)
+        }
+        self.twitter_invalid_login = {
+            "provider": "twitter",
+            "access_token": os.environ.get("TWITTER_INVALID_TOKEN", None),
+            "access_token_secret": os.environ.get("TWITTER_ACCESS_SECRET", None)
+        }
+        self.twitter_no_secret = {
+            "provider": "twitter",
+            "access_token": os.environ.get("TWITTER_ACCESS_TOKEN", None)
+        }

@@ -19,3 +19,15 @@ class SocialAuthenticationTests(BaseTest):
     def test_facebook_invalid_login(self):
         response = self.client.post("/api/social/", self.facebook_invalid_login, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_twitter_login(self):
+        response = self.client.post("/api/social/", self.twitter_login, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_invalid_twitter_login(self):
+        response = self.client.post("/api/social/", self.twitter_invalid_login, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_twitter_no_secret(self):
+        response = self.client.post("/api/social/", self.twitter_no_secret, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

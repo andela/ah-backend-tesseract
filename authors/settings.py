@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'public')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.herokuapp.com', '0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1', '.herokuapp.com', '0.0.0.0', 'localhost']
 
 # Application definition
 
@@ -145,9 +145,13 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookAppOAuth2',
     'social_core.backends.facebook.FacebookOAuth2',
     'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.twitter.TwitterOAuth',
+
     'django.contrib.auth.backends.ModelBackend',
 )
-
+#  Twitter configs
+SOCIAL_AUTH_TWITTER_KEY = os.getenv('TWITTER_KEY', None)
+SOCIAL_AUTH_TWITTER_SECRET = os.getenv('TWITTER_SECRET', None)
 # Google configuration
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_SECRET')
@@ -172,6 +176,9 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+
+SOCIAL_AUTH_LOGIN_URL = '/api/users/login/'
+LOGIN_URL = '/api/users/login/'
 
 # Tell Django about the custom `User` model we created. The string
 # `authentication.User` tells Django we are referring to the `User` model in
