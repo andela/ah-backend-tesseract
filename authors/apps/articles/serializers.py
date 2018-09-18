@@ -47,7 +47,6 @@ class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
         fields = ['title', 'slug', 'description', 'body',
                   'created_at', 'updated_at', 'image', 'average_rating', 'favorites_count', 'author', 'read_time', 'tagsList']
 
-
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
     tagsList = TagRelatedField(many=True, required=False, source='tags')
 
@@ -209,7 +208,6 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 
 class FavoriteArticleSerializer(serializers.Serializer):
-
     article = serializers.SlugField()
 
     user = serializers.CharField()
@@ -267,7 +265,6 @@ class ReportArticleSerializer(serializers.ModelSerializer):
         response["user"] = instance.user.username
         response["article"] = instance.article.slug
         return response
-
 
 class BookmarkSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
