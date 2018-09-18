@@ -79,10 +79,6 @@ class AuthenticationTests(BaseTest):
         response = self.client.post('/api/password-reset/', {"email": "uregistered@invalid.com"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_request_password_reset_with_an_empty_email(self):
-        response = self.client.post('/api/password-reset/', {}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_redirect_to_password_reset(self):
         self.client.post('/api/password-reset/', {"email": "mail@me.com"}, format="json")
         response = self.client.get('/api/password-reset/<str:token>/', format="json")

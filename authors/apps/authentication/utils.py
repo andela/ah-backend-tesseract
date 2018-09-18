@@ -28,8 +28,20 @@ def custom_send_mail(email, request, template, email_subject):
     email_to_send.send()
 
 
+
 def subscribe_user(user, serializer_class):
     if not Subscription.objects.filter(user=user):
         serializer = serializer_class(data={"user": user.id})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+def send_password_reset_mail(email, request, template, email_subject, callback_url):
+    message = render_to_string(template, {
+         "callback_url": callback_url
+    })
+
+    email_to_send = EmailMessage(
+        email_subject, message, settings.EMAIL_HOST_USER, to=[email]
+    )
+    email_to_send.send()
+

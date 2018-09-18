@@ -21,15 +21,14 @@ from authors.apps.articles.serializers import (ArticlesSerializer,
                                                FavoriteArticleSerializer,
                                                TagSerializer,
                                                BookmarkSerializer)
+
 from authors.apps.notifications.tasks import send_email_notifications
 
 from authors.apps.notifications.utils import create_notification
 from authors.apps.notifications.serializers import NotificationSerializer
 
 from .helpers import find_instance, find_parent_comment, find_bookmark, perform_post
-from .models import Article, Comment, Tag, ReportedArticles
-
-
+from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 

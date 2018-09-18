@@ -19,7 +19,12 @@ from .serializers import (
     UserProfileSerializer)
 from .models import User
 from .backends import JWTAuthentication
+
 from .utils import custom_send_mail, subscribe_user
+
+
+from .utils import custom_send_mail, send_password_reset_mail
+from django.shortcuts import get_object_or_404
 
 from social_django.utils import load_backend, load_strategy
 
@@ -129,13 +134,15 @@ class PasswordResetAPIView(APIView):
     serializer_class = RequestPasswordResetSerializer
 
     def post(self, request):
-
+        callback_url = request.data.get("callback_url", "http//")
         email = request.data.get('email', None)
+        db_user = get_object_or_404(User, email=email)
         serializer = self.serializer_class(data={"email": email})
         serializer.is_valid(raise_exception=True)
         email_subject = "Reset Authors Haven's Password"
-        message = {"message": "Please check your email for your password reset activation code."}
-        custom_send_mail(email, request, "password_reset.html", email_subject)
+        message = {"message": "Please check your email for your password reset activation code.",
+                   "token": db_user.generate_token()}
+        send_password_reset_mail(email, request, "password_reset.html", email_subject, callback_url)
         return Response(message, status=status.HTTP_200_OK)
 
 
