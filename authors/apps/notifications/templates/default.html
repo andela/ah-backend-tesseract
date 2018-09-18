@@ -1,0 +1,8 @@
+ {% autoescape off %}
+ Hi {{ username }},
+
+ {{ message }}
+
+ Unsubscribe from receiving notifications on http://{{ domain }}{% url 'subscribe_unsubscribe' channel subscribe %}
+
+{% endautoescape %}

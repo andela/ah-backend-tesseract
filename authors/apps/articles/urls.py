@@ -8,7 +8,7 @@ from .views import (ArticleAPIView,
                     ReportArticleAPIView,
                     FavoriteArticleAPIView,
                     TagListAPIView,
-                    searchArticlesListAPIView,
+                    SearchArticlesListAPIView,
                     BookmarkAPIView)
 
 
@@ -31,7 +31,7 @@ urlpatterns = [
 
     path("article/<str:slug>/report", ReportArticleAPIView.as_view(), name="report_article"),
     path("article/tags", TagListAPIView.as_view(), name="article-tags"),
-    path("articles/search/", searchArticlesListAPIView.as_view(), name="search_articles"),
+    path("articles/search/", SearchArticlesListAPIView.as_view(), name="search_articles"),
 
     path("article/<str:slug>/bookmark", BookmarkAPIView.as_view(), name="bookmark_article"),
     path("articles/bookmarks", BookmarkAPIView.as_view(), name="bookmarks"),

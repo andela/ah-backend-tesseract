@@ -56,7 +56,7 @@ class AuthenticationTests(BaseTest):
 
     def test_Unauthenticated_user_attempts_to_follow(self):
         self.un_auth_client = APIClient()
-        response = self.un_auth_client.get('/api/profiles/Jacob1/follow', format="json")
+        response = self.un_auth_client.post('/api/profiles/Jacob1/follow', format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_users_can_follow_each_other(self):

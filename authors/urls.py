@@ -24,5 +24,6 @@ urlpatterns = [
     path('oauth/', include('social_django.urls')),
 
     path('api/', include('authors.apps.profiles.urls')),
+    path('api/', include('authors.apps.notifications.urls')),
 ]
 

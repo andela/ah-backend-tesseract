@@ -8,13 +8,16 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from authors.apps import ApplicationJSONRenderer as UserJSONRenderer
 from social_core.exceptions import MissingBackend
+
+from authors.apps.notifications.models import Subscription
+from authors.apps.notifications.serializers import SubscriptionSerializer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
     ComfirmPasswordResetSerializer, RequestPasswordResetSerializer, SocialAuthenticationSerializer,
     UserProfileSerializer)
 from .models import User
 from .backends import JWTAuthentication
-from .utils import custom_send_mail
+from .utils import custom_send_mail, subscribe_user
 
 from social_django.utils import load_backend, load_strategy
 
@@ -24,9 +27,11 @@ class RegistrationAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
+    subscription_class = SubscriptionSerializer
 
     def post(self, request):
         user = request.data.get('user', {})
+
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -42,6 +47,7 @@ class RegistrationAPIView(APIView):
 
 
 class ActivateAccountAPIView(APIView):
+    serializer_class = SubscriptionSerializer
 
     def get(self, request, user_id, token):
         try:
@@ -55,6 +61,11 @@ class ActivateAccountAPIView(APIView):
         auth_result = auth.authenticate(request, token=token)
         if user is not None and auth_result[0].id == user.id:
             user.is_active = True
+
+            # subscribe user by default to receive notifications
+
+            subscribe_user(user, self.serializer_class)
+
             user.save()
             # login the user
             return Response({"message": "account activated, you can proceed to login"}, status=status.HTTP_200_OK)
@@ -150,6 +161,7 @@ class SocialAuthenticationAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = SocialAuthenticationSerializer
     renderer_classes = (UserJSONRenderer,)
+    subscription_class = SubscriptionSerializer
 
     def create(self, request, *args, **kwargs):
         """
@@ -190,10 +202,12 @@ class SocialAuthenticationAPIView(CreateAPIView):
 
         # Since the user is using social authentication, there is no need for email verification.
         # We therefore set the user to active here.
+        # And also subscribe them for notifications
 
         user.is_active = True
-
         user.save()
+
+        subscribe_user(user, self.subscription_class)
 
         serializer = UserSerializer(user)
     
