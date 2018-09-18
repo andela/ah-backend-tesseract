@@ -14,11 +14,12 @@ from authors.apps.articles.serializers import (ArticlesSerializer,
                                                CommentSerializer,
                                                RatingSerializer,
                                                LikeSerializer,
-                                               DeleteArticleSerializer, FavoriteArticleSerializer, TagSerializer)
+                                               ReportArticleSerializer,
+                                               FavoriteArticleSerializer, TagSerializer)
 
 
 from .helpers import find_instance, find_parent_comment
-from .models import Article, Comment, FavoriteArticle, Tag
+from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -51,7 +52,6 @@ class ArticleAPIView(APIView):
     renderer_classes = (ApplicationJSONRenderer,)
     serializer_class = ArticleSerializer
     detail_serializer = ArticlesSerializer
-    delete_article_serializer = DeleteArticleSerializer
 
     def post(self, request):
         article_data = request.data
@@ -68,13 +68,13 @@ class ArticleAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, slug):
-        author = request.user.id
+        instance = find_instance(Article, slug)
+        if instance:
+            if instance.author.id == request.user.id or request.user.is_superuser:
+                instance.delete()
+                return Response({"message": "article deleted successfully"}, status=status.HTTP_200_OK)
 
-        data = {"author": author, "slug": slug}
-        serializer = self.delete_article_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-
-        return Response({"message": "article deleted successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": "article not deleted"}, status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request, slug):
         article_data = request.data
@@ -219,6 +219,31 @@ class LikeArticleAPIView(APIView):
         else:
             action_status = status.HTTP_200_OK
         return Response(serializer.data, status=action_status)
+
+
+class ReportArticleAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (ApplicationJSONRenderer,)
+    class_serializer = ReportArticleSerializer
+
+    def post(self, request, slug):
+        article = find_instance(Article, slug)
+        user = request.user.id
+        message = request.data["message"]
+        data = {"user": user, "article": article.id, "message": message}
+
+        serializer = self.class_serializer(data=data)
+        serializer.is_valid()
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request, slug):
+        article = find_instance(Article, slug)
+        if request.user.is_superuser:
+            article_reports = ReportedArticles.objects.filter(article=article.id)
+            serializer = self.class_serializer(article_reports, many=True)
+            return Response({"reports": serializer.data}, status=status.HTTP_200_OK)
+        return Response({"message": "you do not have access rights"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class TagListAPIView(generics.ListAPIView):
