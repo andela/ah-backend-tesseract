@@ -61,3 +61,16 @@ class ArticleTests(BaseTest):
     def test_out_of_range_page_number(self):
         self.paginated_response = self.client.get('/api/articles?page=999')
         self.assertEqual(self.paginated_response.status_code, status.HTTP_200_OK)
+
+    def test_article_read_time(self):
+        """Tests if an article of 275 words has a 1 minute read time"""
+        article_data = {
+            "title": "this is a long article",
+            "description": "this is a description",
+            "body": "word, "*(275*3)
+        }
+
+        create_article_response = self.client.post("/api/article/create", article_data, format="json")
+        self.assertEqual(create_article_response.status_code, status.HTTP_201_CREATED)
+        read_time = create_article_response.data['read_time']
+        self.assertEqual(read_time, "3 min")

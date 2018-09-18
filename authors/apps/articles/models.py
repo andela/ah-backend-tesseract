@@ -3,6 +3,8 @@ from django.utils.text import slugify
 
 from ..authentication.models import User
 
+import string
+
 
 class Article(models.Model):
     title = models.CharField(max_length=120)
@@ -41,6 +43,22 @@ class Article(models.Model):
             total_ratings += rate.rating
             count += 1
         return 0 if count == 0 else int(total_ratings/count)
+
+    @property
+    def read_time(self):
+        """
+        Calculates the amount of time it takes to read an article based on the number of words.
+        It assumes an average read time of 275 words per minute.
+        """
+        words = self.body
+
+        translator = str.maketrans(string.punctuation, ' '*len(string.punctuation))
+        words_list = words.translate(translator).split()
+
+        num_of_words = len(words_list)
+
+        time_to_read = round(num_of_words/275)
+        return str(time_to_read) + " min" if time_to_read > 0 else "less than 1 min"
 
     def comments_on_article(self):
         """

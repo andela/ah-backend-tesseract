@@ -27,13 +27,13 @@ class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['title', 'slug', 'description', 'body',
-                  'created_at', 'updated_at', 'image', 'average_rating', 'author']
+                  'created_at', 'updated_at', 'image', 'average_rating', 'author', 'read_time']
 
 
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
     class Meta:
         model = Article
-        fields = ['title', 'description', 'body', 'author']
+        fields = ['title', 'description', 'body', 'author', 'read_time']
 
     def create(self, validated_data):
         return Article.objects.create(**validated_data)
