@@ -20,6 +20,12 @@ class BaseTest(TestCase):
             "description": "this is a description",
             "body": "this is the body"
         }
+        self.tag_article_data = {
+            "title": "the Tagging article",
+            "description": "This is you",
+            "body": "Hello apps",
+            "tags": "Hello world, Kampala, Andela Uganda]"
+        }
 
         self.duplicate_article = {
             "title": "this is my title",

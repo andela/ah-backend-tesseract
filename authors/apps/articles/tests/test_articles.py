@@ -74,3 +74,32 @@ class ArticleTests(BaseTest):
         self.assertEqual(create_article_response.status_code, status.HTTP_201_CREATED)
         read_time = create_article_response.data['read_time']
         self.assertEqual(read_time, "3 min")
+    def test_retrieve_tags(self):
+        response = self.client.get("/api/article/tags", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('tags', response.data)
+    def test_tag_creation(self):
+        response= self.client.post("/api/article/create", self.tag_article_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("tagsList", str(response.data))
+
+    def test_add_existing_tags_to_an_an_article(self):
+        self.client.post("/api/article/create", self.tag_article_data, format="json")
+        self.client.post("/api/article/create", self.tag_article_data, format="json")
+        response = self.client.get("/api/article/tags", format="json")
+        self.assertEqual(4, len(response.data.get('tags')))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

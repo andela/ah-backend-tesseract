@@ -4,8 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, NotAuthenticated
 
-from .models import Article, Comment, Like, Rating, FavoriteArticle
-
+from .models import Article, Comment, Like, Rating, FavoriteArticle, Tag
 from authors.apps.authentication.models import User
 
 
@@ -22,21 +21,55 @@ class GeneralRepresentation:
         return response
 
 
-class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
+        model = Tag
+        fields = ('tag',)
+
+    def to_representation(self, value):
+        return value.tag
+
+class TagRelatedField(serializers.RelatedField):
+
+    def get_queryset(self):
+        return Tag.objects.all()
+
+    def to_representation(self, value):
+        return value.tag
+
+class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
+    tagsList = TagRelatedField(many=True, required=False, source='tags')
+
+    class Meta:
+
         model = Article
         fields = ['title', 'slug', 'description', 'body',
-                  'created_at', 'updated_at', 'image', 'average_rating', 'author', 'read_time']
+                  'created_at', 'updated_at', 'image', 'average_rating', 'author', 'read_time', 'tagsList']
+
 
 
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
+    tagsList = TagRelatedField(many=True, required=False, source='tags')
+
     class Meta:
         model = Article
-        fields = ['title', 'description', 'body', 'author', 'read_time']
+        fields = ['title', 'description', 'body', 'author', 'read_time', 'tagsList']
 
     def create(self, validated_data):
-        return Article.objects.create(**validated_data)
+        request = self.context.get('request')
+        tags = request.data.get('tags', "")
+        tagslist = tags.split(',')
+        article = Article.objects.create(**validated_data)
+        for tag in tagslist:
+            try:
+                tag = Tag.objects.get(tag=tag.strip())
+
+                article.tags.add(tag.id)
+            except Tag.DoesNotExist:
+                article.tags.create(tag=tag.strip())
+
+        return article
 
     def update(self, instance, validated_data):
 

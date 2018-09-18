@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, generics
 
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
@@ -14,11 +14,11 @@ from authors.apps.articles.serializers import (ArticlesSerializer,
                                                CommentSerializer,
                                                RatingSerializer,
                                                LikeSerializer,
-                                               DeleteArticleSerializer, FavoriteArticleSerializer)
+                                               DeleteArticleSerializer, FavoriteArticleSerializer, TagSerializer)
 
 
 from .helpers import find_instance, find_parent_comment
-from .models import Article, Comment, FavoriteArticle
+from .models import Article, Comment, FavoriteArticle, Tag
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -56,7 +56,8 @@ class ArticleAPIView(APIView):
     def post(self, request):
         article_data = request.data
         article_data["author"] = request.user.id
-        serializer = self.serializer_class(data=article_data)
+        context = {'request': request}
+        serializer = self.serializer_class(data=article_data, context=context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -218,3 +219,17 @@ class LikeArticleAPIView(APIView):
         else:
             action_status = status.HTTP_200_OK
         return Response(serializer.data, status=action_status)
+
+
+class TagListAPIView(generics.ListAPIView):
+    queryset = Tag.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = TagSerializer
+
+    def list(self, request):
+        serializer_data = self.get_queryset()
+        serializer = self.serializer_class(serializer_data, many=True)
+
+        return Response({
+            'tags': serializer.data
+        }, status=status.HTTP_200_OK)

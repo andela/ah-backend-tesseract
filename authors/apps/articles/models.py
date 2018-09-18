@@ -15,6 +15,7 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     image = models.TextField(default=None, blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    tags = models.ManyToManyField('articles.Tag', related_name='articles')
 
     def __str__(self):
         return self.title
@@ -109,4 +110,11 @@ class FavoriteArticle(models.Model):
     favorited_at = models.DateTimeField(auto_now_add=True)
 
     favorites = models.Manager()
+
+
+class Tag(models.Model):
+    tag = models.CharField(max_length=305)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
