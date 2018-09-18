@@ -8,8 +8,8 @@ from .views import (ArticleAPIView,
                     ReportArticleAPIView,
                     FavoriteArticleAPIView,
                     TagListAPIView,
-                    searchArticlesListAPIView
-                    )
+                    searchArticlesListAPIView,
+                    BookmarkAPIView)
 
 
 urlpatterns = [
@@ -28,7 +28,12 @@ urlpatterns = [
     path("article/<str:slug>/comments/<int:parent_comment_id>/replies", CommentAPIView.as_view(),
          name="get_all_replies"),
     path("article/favorite", FavoriteArticleAPIView.as_view(), name="favorite_article"),
+
     path("article/<str:slug>/report", ReportArticleAPIView.as_view(), name="report_article"),
     path("article/tags", TagListAPIView.as_view(), name="article-tags"),
     path("articles/search/", searchArticlesListAPIView.as_view(), name="search_articles"),
+
+    path("article/<str:slug>/bookmark", BookmarkAPIView.as_view(), name="bookmark_article"),
+    path("articles/bookmarks", BookmarkAPIView.as_view(), name="bookmarks"),
+    path("article/<str:slug>/bookmark/delete", BookmarkAPIView.as_view(), name="delete_bookmark"),
     ]

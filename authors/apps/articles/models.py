@@ -123,3 +123,9 @@ class ReportedArticles(models.Model):
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE)
     message = models.TextField(blank=True, null=True)
     reported_at = models.DateTimeField(auto_now_add=True)
+
+
+class Bookmark(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    bookmarked_at = models.DateTimeField(auto_now_add=True)

@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 from authors.apps import ApplicationJSONRenderer, update_data_with_user
 
-from rest_framework.exceptions import PermissionDenied, NotFound
+from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 
 from authors.apps.articles.serializers import (ArticlesSerializer,
                                                ArticleSerializer,
@@ -18,11 +18,13 @@ from authors.apps.articles.serializers import (ArticlesSerializer,
                                                RatingSerializer,
                                                LikeSerializer,
                                                ReportArticleSerializer,
-                                               FavoriteArticleSerializer, TagSerializer)
+                                               FavoriteArticleSerializer,
+                                               TagSerializer,
+                                               BookmarkSerializer)
 
-
-from .helpers import find_instance, find_parent_comment
+from .helpers import find_instance, find_parent_comment, find_bookmark
 from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
+
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -72,7 +74,7 @@ class ArticlesListAPIView(APIView):
 
 
 class ArticleAPIView(APIView):
-    permission_classes = (IsAuthenticatedOrReadOnly ,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ApplicationJSONRenderer,)
     serializer_class = ArticleSerializer
     detail_serializer = ArticlesSerializer
@@ -122,7 +124,6 @@ class ArticleRatingAPIView(APIView):
     article_serializer = ArticlesSerializer
 
     def post(self, request):
-
         serializer = perform_post(request, 'rated_by', self.serializer_class)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -161,7 +162,7 @@ def perform_post(request, user_key, serializer_class):
 
 
 class CommentAPIView(APIView):
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     comment_serializer_class = CommentSerializer
     comment_list_serializer_class = CommentListSerializer
 
@@ -282,3 +283,38 @@ class TagListAPIView(generics.ListAPIView):
         return Response({
             'tags': serializer.data
         }, status=status.HTTP_200_OK)
+
+
+class BookmarkAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    bookmark_serializer = BookmarkSerializer
+
+    def post(self, request, slug):
+        article = find_instance(Article, slug)
+
+        if find_bookmark(article, request.user):
+            raise ValidationError("You have already bookmarked this article")
+
+        serializer = self.bookmark_serializer(data={}, context={"user": request.user,
+                                                                "article": article})
+        serializer.is_valid()
+        serializer.save()
+
+        return Response({"bookmark": serializer.data, "message": "bookmark added"}, status.HTTP_201_CREATED)
+
+    def get(self, request):
+
+        bookmarks = request.user.bookmark_set
+        serializer = self.bookmark_serializer(bookmarks, many=True)
+
+        return Response({"bookmarks": serializer.data}, status.HTTP_200_OK)
+
+    def delete(self, request, slug):
+
+        article = find_instance(Article, slug)
+        bookmark = find_bookmark(article, request.user)
+        if not bookmark:
+            raise NotFound("This article is not in your bookmarks")
+        bookmark.delete()
+
+        return Response({"message": "Bookmark deleted successfully"}, status.HTTP_200_OK)

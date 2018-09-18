@@ -446,6 +446,21 @@ No additional parameters required
 
 `GET /api/tags`
 
+### Bookmark article
+
+`POST /api/article/:slug/bookmark`
+
+Authentication required, returns bookmark. No additional parameters required
+
+### Get bookmarks
+`GET /api/articles/bookmarks`
+
+Authentication required, returns a list of the user's bookmarks.
+
+### Delete bookmarks
+`DELETE /api/article/:slug/bookmark/delete`
+
+Authentication required
 
 
 
