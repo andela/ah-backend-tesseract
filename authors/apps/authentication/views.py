@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from social_core.backends.oauth import BaseOAuth1
+
 from authors.apps import ApplicationJSONRenderer as UserJSONRenderer
 from social_core.exceptions import MissingBackend
 
@@ -183,8 +185,11 @@ class SocialAuthenticationAPIView(CreateAPIView):
         strategy = load_strategy(request)
         try:
             # Loads backends defined on SOCIAL_AUTH_AUTHENTICATION_BACKENDS,
-            # checks the appropiate one by using the provider given
+            # checks the appropriate one by using the provider given
+
             backend = load_backend(strategy=strategy, name=provider, redirect_uri=None)
+            access_token = self.update_access_token(backend, request, access_token)
+
         except MissingBackend:
             return Response({
                 "errors": {
@@ -212,3 +217,20 @@ class SocialAuthenticationAPIView(CreateAPIView):
         serializer = UserSerializer(user)
     
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def update_access_token(backend, request, access_token):
+
+        if isinstance(backend, BaseOAuth1):
+            # Get access_token and access token secret for Oauth1 used by Twitter
+            if "access_token_secret" in request.data:
+                return {
+                    'oauth_token': request.data['access_token'],
+                    'oauth_token_secret': request.data['access_token_secret']
+                }
+            else:
+                return Response(
+                    {"error": "Provide field 'access_token_secret' in your request"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return access_token
