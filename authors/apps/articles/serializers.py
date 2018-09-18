@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, NotAuthenticated
 
+from .models import Article, Comment, Like, Rating, FavoriteArticle, ReportedArticles, Bookmark, Tag
 
-from .models import Article, Comment, Like, Rating, FavoriteArticle, ReportedArticles, Tag
 from authors.apps.authentication.models import User
 
 
@@ -23,13 +23,13 @@ class GeneralRepresentation:
 
 
 class TagSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Tag
         fields = ('tag',)
 
     def to_representation(self, value):
         return value.tag
+
 
 class TagRelatedField(serializers.RelatedField):
 
@@ -39,15 +39,14 @@ class TagRelatedField(serializers.RelatedField):
     def to_representation(self, value):
         return value.tag
 
+
 class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
     tagsList = TagRelatedField(many=True, required=False, source='tags')
 
     class Meta:
-
         model = Article
         fields = ['title', 'slug', 'description', 'body',
                   'created_at', 'updated_at', 'image', 'average_rating', 'author', 'read_time', 'tagsList']
-
 
 
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
@@ -86,7 +85,6 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
 
 
 class RatingSerializer(serializers.Serializer):
-
     article = serializers.SlugField()
 
     rating = serializers.IntegerField()
@@ -136,7 +134,8 @@ class LikeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
 
         try:
-            self.instance = Like.objects.filter(article=validated_data["article"].id, user=validated_data["user"].id)[0:1].get()
+            self.instance = Like.objects.filter(article=validated_data["article"].id, user=validated_data["user"].id)[
+                            0:1].get()
         except Like.DoesNotExist:
             return Like.objects.create(**validated_data)
 
@@ -192,7 +191,6 @@ class CommentSerializer(serializers.Serializer):
 
 
 class ReplySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Comment
         fields = ['id', 'created_at', 'updated_at', 'body', 'author']
@@ -209,7 +207,6 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 
 class FavoriteArticleSerializer(serializers.Serializer):
-
     article = serializers.SlugField()
 
     favorite = serializers.BooleanField()
@@ -276,3 +273,19 @@ class ReportArticleSerializer(serializers.ModelSerializer):
         response["user"] = instance.user.username
         response["article"] = instance.article.slug
         return response
+
+class BookmarkSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    user = UserSerializer(required=False)
+    article = ArticleSerializer(required=False)
+    bookmarked_at = serializers.DateTimeField(required=False)
+
+    class Meta:
+        model = Bookmark
+        fields = ['id', 'user', 'article', 'bookmarked_at']
+
+    def create(self, validated_data):
+        user = self.context["user"]
+        article = self.context["article"]
+
+        return Bookmark.objects.create(user=user, article=article)

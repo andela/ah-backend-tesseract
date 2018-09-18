@@ -1,6 +1,6 @@
 from rest_framework.exceptions import NotFound
 
-from .models import Article, Comment
+from .models import Article, Comment, Bookmark
 
 
 def find_instance(model, search_key):
@@ -28,3 +28,12 @@ def find_parent_comment(parent_comment_id):
         parent_comment = None
 
     return parent_comment
+
+
+def find_bookmark(article, user):
+    try:
+        bookmark = user.bookmark_set.get(article=article)
+    except Bookmark.DoesNotExist:
+        bookmark = None
+
+    return bookmark
