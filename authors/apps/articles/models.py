@@ -118,3 +118,8 @@ class Tag(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+class ReportedArticles(models.Model):
+    article = models.ForeignKey(Article, blank=False, null=False, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE)
+    message = models.TextField(blank=True, null=True)
+    reported_at = models.DateTimeField(auto_now_add=True)

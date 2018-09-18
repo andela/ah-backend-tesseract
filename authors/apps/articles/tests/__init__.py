@@ -1,6 +1,8 @@
 from rest_framework.test import APIClient
 from django.test import TestCase, TransactionTestCase
 
+from authors.apps.authentication.models import User
+
 
 class BaseTest(TestCase):
 
@@ -55,6 +57,21 @@ class BaseTest(TestCase):
 
         self.client = APIClient()
 
+        User.objects.create_user("user_test", "mail@me.com", password="1234sks5678")
+        self.user = User.objects.get(email="mail@me.com")
+        self.user.is_active = True
+        self.user.is_superuser = True
+        self.user.save()
+
+        self.super_user_data = {"user": {
+            "email": "mail@me.com",
+            "password": "1234sks5678"
+        }
+        }
+
+        self.login_response = self.client.post("/api/users/login/", self.super_user_data, format="json")
+        super_user_token = self.login_response.data["token"]
+
         self.register_response = self.client.post("/api/users/", self.user_data, format="json")
         token = self.register_response.data["token"]
         self.client.credentials(HTTP_AUTHORIZATION=token)
@@ -82,8 +99,17 @@ class BaseTest(TestCase):
         self.update_non_existing_article = self.client.put("/api/article/edit/this-is-my-title-1-fake",
                                                            self.article_update_data,
                                                            format="json")
+        self.report = {"message": "test report"}
+        self.test_article_reporting = self.client.post('/api/article/this-is-my-title-1/report', self.report,
+                                                       format="json")
+
+        self.client.credentials(HTTP_AUTHORIZATION=super_user_token)
+        self.test_article_reports_get = self.client.get('/api/article/this-is-my-title-1/report', format="json")
 
         self.client.credentials(HTTP_AUTHORIZATION=self.register_second_user_response.data["token"])
+
+        self.test_article_reports_get_non_super_user = self.client.get('/api/article/this-is-my-title-1/report',
+                                                                       format="json")
 
         self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1",
                                                               self.article_update_data, format="json")

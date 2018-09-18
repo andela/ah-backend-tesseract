@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, NotAuthenticated
 
-from .models import Article, Comment, Like, Rating, FavoriteArticle, Tag
+
+from .models import Article, Comment, Like, Rating, FavoriteArticle, ReportedArticles, Tag
 from authors.apps.authentication.models import User
 
 
@@ -82,23 +83,6 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
             return instance
         else:
             raise serializers.ValidationError("You are not Authorised to edit this article")
-
-
-class DeleteArticleSerializer(serializers.Serializer):
-    author = serializers.IntegerField()
-    slug = serializers.SlugField()
-
-    def validate(self, data):
-        author = data.get('author', None)
-        slug = data.get("slug", None)
-
-        instance = get_object_or_404(Article, slug=slug)
-        if instance:
-            if instance.author.id == author:
-                instance.delete()
-                return {"author": author, "slug": slug}
-            else:
-                raise NotAuthenticated("not authorised to delete this article")
 
 
 class RatingSerializer(serializers.Serializer):
@@ -276,3 +260,19 @@ class FavoriteArticleSerializer(serializers.Serializer):
                 if instance.favorite \
                 else \
                 serializers.ValidationError("The article is already not in your favorites")
+
+
+class ReportArticleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ReportedArticles
+        fields = ['user', 'article', 'message']
+
+    def create(self, validated_data):
+        return ReportedArticles.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response["user"] = instance.user.username
+        response["article"] = instance.article.slug
+        return response
