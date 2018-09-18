@@ -1,5 +1,5 @@
 
-from rest_framework import status, generics
+from rest_framework import generics
 
 from rest_framework import status
 from rest_framework.generics import ListAPIView
@@ -21,14 +21,19 @@ from authors.apps.articles.serializers import (ArticlesSerializer,
                                                FavoriteArticleSerializer,
                                                TagSerializer,
                                                BookmarkSerializer)
+from authors.apps.notifications.tasks import send_email_notifications
 
-from .helpers import find_instance, find_parent_comment, find_bookmark
+from authors.apps.notifications.utils import create_notification
+from authors.apps.notifications.serializers import NotificationSerializer
+
+from .helpers import find_instance, find_parent_comment, find_bookmark, perform_post
 from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
 
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-class searchArticlesListAPIView(ListAPIView):
+
+class SearchArticlesListAPIView(ListAPIView):
     queryset = Article.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = ArticlesSerializer
@@ -49,6 +54,7 @@ class searchArticlesListAPIView(ListAPIView):
         if tag is not None:
             queryset = queryset.filter(tags__tag__icontains=tag)
         return queryset
+
 
 class ArticlesListAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -78,6 +84,7 @@ class ArticleAPIView(APIView):
     renderer_classes = (ApplicationJSONRenderer,)
     serializer_class = ArticleSerializer
     detail_serializer = ArticlesSerializer
+    notification_serializer = NotificationSerializer
 
     def post(self, request):
         article_data = request.data
@@ -86,6 +93,12 @@ class ArticleAPIView(APIView):
         serializer = self.serializer_class(data=article_data, context=context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # Create a notification about the article by this given author
+
+        create_notification('publish_article.html', serializer.instance, request.user)
+        send_email_notifications.delay()
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get(self, request, slug):
@@ -153,18 +166,11 @@ class FavoriteArticleAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-def perform_post(request, user_key, serializer_class):
-    data = update_data_with_user(request, user_key)
-    serializer = serializer_class(data=data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    return serializer
-
-
 class CommentAPIView(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     comment_serializer_class = CommentSerializer
     comment_list_serializer_class = CommentListSerializer
+    notification_serializer = NotificationSerializer
 
     def post(self, request, slug, parent_comment_id=None):
         parent_comment = find_parent_comment(parent_comment_id)
@@ -178,6 +184,10 @@ class CommentAPIView(APIView):
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # Create a notification about the article by this given author
+        create_notification('comment_article.html', article, request.user)
+        send_email_notifications.delay()
 
         return Response({"comment": serializer.data}, status=status.HTTP_201_CREATED)
 

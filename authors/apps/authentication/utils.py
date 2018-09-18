@@ -1,3 +1,4 @@
+from authors.apps.notifications.models import Subscription
 from .models import User
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -25,3 +26,10 @@ def custom_send_mail(email, request, template, email_subject):
     )
 
     email_to_send.send()
+
+
+def subscribe_user(user, serializer_class):
+    if not Subscription.objects.filter(user=user):
+        serializer = serializer_class(data={"user": user.id})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()

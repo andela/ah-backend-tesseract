@@ -49,19 +49,15 @@ class AuthenticatedProfileSerializer(serializers.ModelSerializer):
             for x in followers:
                 temp.append(AuthenticatedProfileSerializer(x).data)
             followers = temp
-            return (list(followers))
+            return list(followers)
 
     def get_followers(self, instance):
         request = self.context.get('request', None)
         if request is not None:
             user_profile = request.user.profile
-            followings =Profile.objects.filter(follows__user__username=user_profile)
+            followings = Profile.objects.filter(follows__user__username=user_profile)
             temp = []
             for x in followings:
                 temp.append(AuthenticatedProfileSerializer(x).data)
             followings = temp
-            return(list(followings))
-
-
-
-
+            return list(followings)

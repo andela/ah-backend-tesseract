@@ -1,5 +1,6 @@
 from rest_framework.exceptions import NotFound
 
+from authors.apps import update_data_with_user
 from .models import Article, Comment, Bookmark
 
 
@@ -37,3 +38,11 @@ def find_bookmark(article, user):
         bookmark = None
 
     return bookmark
+
+
+def perform_post(request, user_key, serializer_class):
+    data = update_data_with_user(request, user_key)
+    serializer = serializer_class(data=data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return serializer

@@ -1,6 +1,7 @@
 from django.db import models
 from ..authentication.models import User
 
+
 class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -16,7 +17,7 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
-    def follow(self,followed_profile):
+    def follow(self, followed_profile):
         self.follows.add(followed_profile)
 
     def unfollow(self, followed_profile):
@@ -28,5 +29,5 @@ class Profile(models.Model):
     def following_user_profiles(self, profile):
         return self.follows.filter(pk=profile.pk)
 
-    def is_followed_user_profiles(self, profile):
-        return self.followed_by.filter(pk=profile.pk)
+    def is_followed_user_profiles(self):
+        return Profile.objects.filter(follows__user__username=self.user.username)

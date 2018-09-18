@@ -14,6 +14,8 @@ import os
 
 import dj_database_url
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     'authors.apps.articles',
     'authors.apps.core',
     'authors.apps.profiles',
+    'authors.apps.notifications',
 ]
 
 MIDDLEWARE = [
@@ -93,6 +96,8 @@ DATABASES = {
         'PORT': os.getenv('PORT'),
     }
 }
+
+HOST = os.getenv('HOST')
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -192,3 +197,16 @@ EMAIL_PORT = os.getenv('EMAIL_PORT')
 
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
+
+
+# Celery application settings
+REDIS_URL = os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0')
+BROKER_TRANSPORT = 'redis'
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Nairobi'
+
+
