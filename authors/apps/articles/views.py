@@ -118,7 +118,7 @@ class ArticleAPIView(APIView):
     def put(self, request, slug):
         article_data = request.data
         article_data["author"] = request.user.id
-        serializer = self.serializer_class(data=article_data)
+        serializer = self.serializer_class(data=article_data, context={'tags': request.data.get('tags', '')})
         serializer.instance = find_instance(Article, slug)
         try:
             serializer.instance = Article.objects.get(slug=slug)

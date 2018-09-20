@@ -72,8 +72,12 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
         return article
 
     def update(self, instance, validated_data):
-
+        tags = self.context.get('tags', '')
+        for tag in instance.tags.all():
+            instance.tags.remove(tag)
         if validated_data["author"].id == instance.author.id:
+            for tag in tags.split(','):
+                instance.tags.add(Tag.objects.get_or_create(tag=tag)[0])
             instance.title = validated_data.get("title", instance.title)
             instance.slug = validated_data.get("slug", instance.get_unique_slug())
             instance.description = validated_data.get("description", instance.description)
