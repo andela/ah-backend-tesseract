@@ -23,5 +23,5 @@ class ArticleTests(BaseTest):
         self.assertEqual(self.rate_article_again.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_average_rating(self):
-        article_instance = get_object_or_404(Article, title=self.article_data["title"])
+        article_instance = get_object_or_404(Article, title=self.article_update_data["title"])
         self.assertEqual(article_instance.average_rating, 3)

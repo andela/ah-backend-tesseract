@@ -21,6 +21,9 @@ class Article(models.Model):
         return self.title
 
     def get_unique_slug(self):
+        if self.slug:
+            return
+
         slug = slugify(self.title)
         unique_slug = slug
         num = 1

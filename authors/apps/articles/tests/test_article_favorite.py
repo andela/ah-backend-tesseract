@@ -8,20 +8,20 @@ class ArticleTests(BaseTest):
     def favorite_article(self):
 
         return self.client.post("/api/article/favorite",
-                                                {"article": "this-is-my-title-1", "favorite": True}, format='json')
+                                                {"article": "this-is-my-title", "favorite": True}, format='json')
 
     def unfavorite_post(self):
 
         return self.client.post("/api/article/favorite",
-                                                {"article": "this-is-my-title-1", "favorite": False}, format='json')
+                                                {"article": "this-is-my-title", "favorite": False}, format='json')
 
     def unfavorite_update(self):
         return self.client.put("/api/article/favorite",
-                                                {"article": "this-is-my-title-1", "favorite": False}, format='json')
+                                                {"article": "this-is-my-title", "favorite": False}, format='json')
 
     def favorite_update(self):
         return self.client.put("/api/article/favorite",
-                               {"article": "this-is-my-title-1", "favorite": True}, format='json')
+                               {"article": "this-is-my-title", "favorite": True}, format='json')
 
     def test_favorite_article(self):
         self.assertEqual(self.favorite_article().status_code, status.HTTP_201_CREATED)
@@ -52,6 +52,6 @@ class ArticleTests(BaseTest):
 
     def test_update_before_favoriting_or_unfavoriting(self):
         response = self.client.put("/api/article/favorite",
-                         {"article": "this-is-my-title-1", "favorite": True}, format='json')
+                         {"article": "this-is-my-title", "favorite": True}, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
