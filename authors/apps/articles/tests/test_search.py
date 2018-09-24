@@ -10,9 +10,9 @@ class SearchArticleTests(BaseTest):
         self.assertIn("Jacob1234", str(response.data))
 
     def test_search_article_by_title(self):
-        response = self.client.get("/api/articles/search/?search=this is my title", format="json")
+        response = self.client.get("/api/articles/search/?search=new title", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("this is my title", str(response.data))
+        self.assertIn("new title guys", str(response.data))
 
 
     def test_filter_article_by_author(self):
@@ -26,9 +26,9 @@ class SearchArticleTests(BaseTest):
         self.assertEqual([], response.data)
 
     def test_filter_article_by_title(self):
-        response = self.client.get("/api/articles/search/?title=this is my title", format="json")
+        response = self.client.get("/api/articles/search/?title=this is the new title guys", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("this is my title", str(response.data))
+        self.assertIn("new title guys", str(response.data))
 
     def test_an_unauthenticated_user_can_filter_by_author(self):
         self.client = APIClient()

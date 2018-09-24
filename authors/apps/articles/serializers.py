@@ -75,7 +75,6 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
 
         if validated_data["author"].id == instance.author.id:
             instance.title = validated_data.get("title", instance.title)
-            instance.slug = validated_data.get("slug", instance.get_unique_slug())
             instance.description = validated_data.get("description", instance.description)
             instance.body = validated_data.get("description", instance.description)
             instance.save()

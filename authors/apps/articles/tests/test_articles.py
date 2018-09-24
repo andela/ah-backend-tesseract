@@ -6,8 +6,8 @@ from authors.apps.articles.models import Article
 
 class ArticleTests(BaseTest):
     def test_getting_article_from_model(self):
-        article_instance = get_object_or_404(Article, title=self.article_data["title"])
-        self.assertEqual(str(article_instance), self.article_data["title"])
+        article_instance = get_object_or_404(Article, title=self.article_update_data["title"])
+        self.assertEqual(str(article_instance), self.article_update_data["title"])
 
     def test_article_creation_same_title(self):
         duplicate_article_response = self.create_duplicate_article
@@ -74,10 +74,12 @@ class ArticleTests(BaseTest):
         self.assertEqual(create_article_response.status_code, status.HTTP_201_CREATED)
         read_time = create_article_response.data['read_time']
         self.assertEqual(read_time, "3 min")
+
     def test_retrieve_tags(self):
         response = self.client.get("/api/article/tags", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('tags', response.data)
+
     def test_tag_creation(self):
         response= self.client.post("/api/article/create", self.tag_article_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

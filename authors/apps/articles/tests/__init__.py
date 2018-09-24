@@ -22,6 +22,7 @@ class BaseTest(TestCase):
             "description": "this is a description",
             "body": "this is the body"
         }
+
         self.tag_article_data = {
             "title": "the Tagging article",
             "description": "This is you",
@@ -42,11 +43,11 @@ class BaseTest(TestCase):
         }
 
         self.test_valid_ratings = {
-            "article": "this-is-my-title-1",
+            "article": "this-is-my-title",
             "rating": 3
         }
         self.test_invalid_ratings = {
-            "article": "this-is-my-title-1",
+            "article": "this-is-my-title",
             "rating": 9
         }
 
@@ -89,8 +90,8 @@ class BaseTest(TestCase):
 
         self.update_article = self.client.put("/api/article/edit/this-is-my-title", self.article_update_data,
                                               format="json")
-
-        self.delete_article = self.client.delete("/api/article/delete/this-is-the-new-title-guys", format="json")
+        # delete the duplicate
+        self.delete_article = self.client.delete("/api/article/delete/this-is-my-title-1", format="json")
 
         self.delete_article_with_no_slug = self.client.delete("/api/article/delete/", format="json")
 
@@ -100,32 +101,32 @@ class BaseTest(TestCase):
                                                            self.article_update_data,
                                                            format="json")
         self.report = {"message": "test report"}
-        self.test_article_reporting = self.client.post('/api/article/this-is-my-title-1/report', self.report,
+        self.test_article_reporting = self.client.post('/api/article/this-is-my-title/report', self.report,
                                                        format="json")
 
         self.client.credentials(HTTP_AUTHORIZATION=super_user_token)
-        self.test_article_reports_get = self.client.get('/api/article/this-is-my-title-1/report', format="json")
+        self.test_article_reports_get = self.client.get('/api/article/this-is-my-title/report', format="json")
 
         self.client.credentials(HTTP_AUTHORIZATION=self.register_second_user_response.data["token"])
 
-        self.test_article_reports_get_non_super_user = self.client.get('/api/article/this-is-my-title-1/report',
+        self.test_article_reports_get_non_super_user = self.client.get('/api/article/this-is-my-title/report',
                                                                        format="json")
 
-        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1",
+        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title",
                                                               self.article_update_data, format="json")
 
-        self.delete_article_different_user = self.client.delete("/api/article/delete/this-is-my-title-1",
+        self.delete_article_different_user = self.client.delete("/api/article/delete/this-is-my-title",
                                                                 format="json")
 
         self.article_like_data = {
-            "article": "this-is-my-title-1",
+            "article": "this-is-my-title",
             "like": True
         }
 
         self.test_article_liking = self.client.post("/api/article/like", self.article_like_data, format="json")
 
         self.article_dislike_data = {
-            "article": "this-is-my-title-1",
+            "article": "this-is-my-title",
             "like": False
         }
 
@@ -133,7 +134,7 @@ class BaseTest(TestCase):
 
         self.same_like_article_liking = self.client.post("/api/article/like", self.article_dislike_data, format="json")
 
-        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title-1",
+        self.update_article_different_owner = self.client.put("/api/article/edit/this-is-my-title",
                                                               self.article_update_data,
                                                               format="json")
 
