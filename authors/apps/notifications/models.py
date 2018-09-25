@@ -40,7 +40,7 @@ class Notification(models.Model):
         # These subscriptions are for users who are favoriting a given article
 
         users_favoriting = [favorite.user
-                            for favorite in FavoriteArticle.favorites.filter(article=self.article, favorite=True)]
+                            for favorite in FavoriteArticle.favorites.filter(article=self.article)]
 
         subscriptions = [Subscription.objects.filter(user=user) for user in users_favoriting]
 

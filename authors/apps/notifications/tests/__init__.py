@@ -33,11 +33,6 @@ class BaseTest(TestCase):
             "body": "this is the body"
         }
 
-        self.article_favorite_data = {
-            "article": "this-is-my-title",
-            "favorite": True
-        }
-
         self.comment = {
             "comment": {
                 "body": "This is a comment"
@@ -61,10 +56,10 @@ class BaseTest(TestCase):
         # User2 and user3 favorites article
 
         self.client.credentials(HTTP_AUTHORIZATION=self.user2_token)
-        self.client.post("/api/article/favorite", self.article_favorite_data, format="json")
+        self.client.post("/api/article/this-is-my-title/favorite", format="json")
 
         self.client.credentials(HTTP_AUTHORIZATION=self.user3_token)
-        self.client.post("/api/article/favorite", self.article_favorite_data, format="json")
+        self.client.post("/api/article/this-is-my-title/favorite", format="json")
 
         # User2 unsubscribes from app notifications an user1 from email
 
@@ -78,7 +73,6 @@ class BaseTest(TestCase):
 
         self.client.credentials(HTTP_AUTHORIZATION=self.user1_token)
         self.client.post("/api/article/this-is-my-title/comments", self.comment, format="json")
-
 
     def register_activate(self, register_data):
         register_response = self.client.post("/api/users/", register_data, format="json")

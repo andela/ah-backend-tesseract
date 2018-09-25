@@ -1,8 +1,7 @@
 import re
 
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, NotAuthenticated
+from rest_framework.exceptions import NotFound
 
 from .models import Article, Comment, Like, Rating, FavoriteArticle, ReportedArticles, Bookmark, Tag
 
@@ -46,7 +45,7 @@ class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['title', 'slug', 'description', 'body',
-                  'created_at', 'updated_at', 'image', 'average_rating', 'author', 'read_time', 'tagsList']
+                  'created_at', 'updated_at', 'image', 'average_rating', 'favorites_count', 'author', 'read_time', 'tagsList']
 
 
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
@@ -54,7 +53,7 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['title', 'description', 'body', 'author', 'read_time', 'tagsList']
+        fields = ['title', 'description', 'body', 'author', 'read_time', 'average_rating', 'favorites_count', 'tagsList']
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -210,32 +209,32 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 
 class FavoriteArticleSerializer(serializers.Serializer):
-    article = serializers.SlugField()
 
-    favorite = serializers.BooleanField()
+    article = serializers.SlugField()
 
     user = serializers.CharField()
 
     def create(self, data):
-        _data = self.create_or_update(data)
+        _data = self.create_or_delete(data)
 
         if isinstance(_data, FavoriteArticle):
-            raise serializers.ValidationError("Please use PUT to update the favorite instead of POST")
+            raise serializers.ValidationError("The article is already in your favorites use DELETE to remove it")
         else:
             return FavoriteArticle.favorites.create(**_data)
 
-    def update(self, instance, data):
-        self.create_or_update(data)
-        instance.favorite = data["favorite"]
-        instance.save()
-        return instance
+    def get_favorite(self, data):
+        _data = self.create_or_delete(data)
 
-    def create_or_update(self, data):
+        if isinstance(_data, FavoriteArticle):
+            return _data
+        else:
+            raise serializers.ValidationError("The article is already not in your favorites, use POST to add it")
+
+    def create_or_delete(self, data):
         data = self.find_user_article(data)
         query_set = FavoriteArticle.favorites.filter(article=self.article, user=self.user)
         if query_set.exists():
             instance = query_set.get()
-            self.handle_existence(instance, data)
             return instance
         return data
 
@@ -253,14 +252,6 @@ class FavoriteArticleSerializer(serializers.Serializer):
 
         return data
 
-    @staticmethod
-    def handle_existence(instance, data):
-        if instance.favorite == data["favorite"]:
-            raise serializers.ValidationError("The article is already in your favorites") \
-                if instance.favorite \
-                else \
-                serializers.ValidationError("The article is already not in your favorites")
-
 
 class ReportArticleSerializer(serializers.ModelSerializer):
 
@@ -276,6 +267,7 @@ class ReportArticleSerializer(serializers.ModelSerializer):
         response["user"] = instance.user.username
         response["article"] = instance.article.slug
         return response
+
 
 class BookmarkSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)

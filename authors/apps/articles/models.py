@@ -49,6 +49,10 @@ class Article(models.Model):
         return 0 if count == 0 else int(total_ratings/count)
 
     @property
+    def favorites_count(self):
+        return FavoriteArticle.favorites.filter(article=self).count()
+
+    @property
     def read_time(self):
         """
         Calculates the amount of time it takes to read an article based on the number of words.
@@ -104,7 +108,6 @@ class Comment(models.Model):
 
 
 class FavoriteArticle(models.Model):
-    favorite = models.BooleanField(default=False)
 
     article = models.ForeignKey(Article, blank=False, null=False, on_delete=models.CASCADE)
 
