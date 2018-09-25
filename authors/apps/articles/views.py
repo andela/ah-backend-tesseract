@@ -27,7 +27,7 @@ from authors.apps.notifications.utils import create_notification
 from authors.apps.notifications.serializers import NotificationSerializer
 
 from .helpers import find_instance, find_parent_comment, find_bookmark, perform_post
-from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
+from .models import Article, Comment, Tag, ReportedArticles
 
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -146,24 +146,23 @@ class FavoriteArticleAPIView(APIView):
     renderer_classes = (ApplicationJSONRenderer,)
     serializer_class = FavoriteArticleSerializer
 
-    def post(self, request):
-        return Response(perform_post(request, 'user', self.serializer_class).data, status=status.HTTP_201_CREATED)
-
-    def put(self, request):
-        data = update_data_with_user(request, 'user')
-        try:
-            article = Article.objects.get(slug=data["article"])
-            instance = FavoriteArticle.favorites.get(article=article, user=request.user)
-        except Article.DoesNotExist:
-            raise NotFound("Article with that slug does not exist")
-        except FavoriteArticle.DoesNotExist:
-            raise NotFound("Use POST to favorite or unfavorite this article")
-
-        serializer = self.serializer_class(data=data)
-        serializer.instance = instance
+    def post(self, request, slug):
+        request.data["user"] = request.user.id
+        request.data["article"] = slug
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.update(instance, data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer.save()
+        return Response({"message": "Article is successfully added to your favorites"},
+                        status=status.HTTP_201_CREATED)
+
+    def delete(self, request, slug):
+        data = update_data_with_user(request, 'user')
+        data["article"] = slug
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        favorite = serializer.get_favorite(data)
+        favorite.delete()
+        return Response({"message": "Article is removed from your favorites"}, status.HTTP_200_OK)
 
 
 class CommentAPIView(APIView):

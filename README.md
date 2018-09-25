@@ -70,7 +70,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
     "favorited": false,
-    "favoritesCount": 0,
+    "favorites_count": 0,
     "author": {
       "username": "jake",
       "bio": "I work at statefarm",
@@ -91,7 +91,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
     "favorited": false,
-    "favoritesCount": 0,
+    "favorites_count": 0,
     "author": {
       "username": "jake",
       "bio": "I work at statefarm",
@@ -108,7 +108,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
     "favorited": false,
-    "favoritesCount": 0,
+    "favorites_count": 0,
     "author": {
       "username": "jake",
       "bio": "I work at statefarm",
