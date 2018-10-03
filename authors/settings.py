@@ -140,6 +140,8 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:4000',
 )
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookAppOAuth2',
