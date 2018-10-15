@@ -47,12 +47,14 @@ class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
         fields = ['title', 'slug', 'description', 'body',
                   'created_at', 'updated_at', 'image', 'average_rating', 'favorites_count', 'author', 'read_time', 'tagsList']
 
+
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
     tagsList = TagRelatedField(many=True, required=False, source='tags')
+    slug = serializers.SlugField(required=False)
 
     class Meta:
         model = Article
-        fields = ['title', 'description', 'body', 'author', 'read_time', 'average_rating', 'favorites_count', 'tagsList']
+        fields = ['title', 'description', 'body', 'author', 'read_time', 'average_rating', 'favorites_count', 'tagsList', 'slug']
 
     def create(self, validated_data):
         request = self.context.get('request')
