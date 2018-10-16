@@ -203,9 +203,10 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
-
+FRONTEND_HOST = os.getenv('FRONTEND_HOST')
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
+BACKEND_PROTOCOL = os.getenv('BACKEND_PROTOCOL')
 
 
 # Celery application settings

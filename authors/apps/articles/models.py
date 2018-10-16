@@ -68,6 +68,16 @@ class Article(models.Model):
         time_to_read = round(num_of_words/275)
         return str(time_to_read) + " min" if time_to_read > 0 else "less than 1 min"
 
+    @property
+    def likes(self):
+        likes = self.like_set.filter(like=True).count()
+        return likes
+
+    @property
+    def dislikes(self):
+        dislikes = self.like_set.filter(like=False).count()
+        return dislikes
+
     def comments_on_article(self):
         """
         Returns only comments without a parent comment.
