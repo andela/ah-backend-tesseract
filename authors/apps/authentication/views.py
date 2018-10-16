@@ -11,7 +11,6 @@ from social_core.backends.oauth import BaseOAuth1
 from authors.apps import ApplicationJSONRenderer as UserJSONRenderer
 from social_core.exceptions import MissingBackend
 
-from authors.apps.notifications.models import Subscription
 from authors.apps.notifications.serializers import SubscriptionSerializer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
@@ -22,9 +21,9 @@ from .backends import JWTAuthentication
 
 from .utils import custom_send_mail, subscribe_user
 
-
+from django.conf import settings
 from .utils import custom_send_mail, send_password_reset_mail
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from social_django.utils import load_backend, load_strategy
 
@@ -75,7 +74,7 @@ class ActivateAccountAPIView(APIView):
 
             user.save()
             # login the user
-            return Response({"message": "account activated, you can proceed to login"}, status=status.HTTP_200_OK)
+            return redirect(settings.FRONTEND_HOST+"/?key="+token)
 
 
 class LoginAPIView(APIView):

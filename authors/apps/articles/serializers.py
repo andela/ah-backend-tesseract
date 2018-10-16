@@ -45,7 +45,8 @@ class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['title', 'slug', 'description', 'body',
-                  'created_at', 'updated_at', 'image', 'average_rating', 'favorites_count', 'author', 'read_time', 'tagsList']
+                  'created_at', 'updated_at', 'image', 'average_rating', 'favorites_count', 'author', 'read_time',
+                  'likes', 'dislikes', 'tagsList']
 
 
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
@@ -54,7 +55,8 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['title', 'description', 'body', 'author', 'read_time', 'average_rating', 'favorites_count', 'tagsList', 'slug']
+        fields = ['title', 'description', 'body', 'author', 'read_time', 'average_rating',
+                  'likes', 'dislikes','favorites_count', 'tagsList', 'slug']
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -80,7 +82,7 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
                 instance.tags.add(Tag.objects.get_or_create(tag=tag)[0])
             instance.title = validated_data.get("title", instance.title)
             instance.description = validated_data.get("description", instance.description)
-            instance.body = validated_data.get("description", instance.description)
+            instance.body = validated_data.get("body", instance.body)
             instance.save()
             return instance
         else:
@@ -267,6 +269,7 @@ class ReportArticleSerializer(serializers.ModelSerializer):
         response["user"] = instance.user.username
         response["article"] = instance.article.slug
         return response
+
 
 class BookmarkSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
