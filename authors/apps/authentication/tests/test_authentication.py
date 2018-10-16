@@ -29,8 +29,7 @@ class AuthenticationTests(BaseTest):
         user_id = urlsafe_base64_encode(force_bytes(user.id)).decode()
         token = self.register_response.data["token"]
         response = self.client.get("/api/activate/"+user_id+"/"+token+"/account/", format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "account activated, you can proceed to login")
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
 
     def test_account_activation_with_wrong_values(self):
         response = self.client.get("/api/activate/wq/jskjahjs/account/", format="json")
