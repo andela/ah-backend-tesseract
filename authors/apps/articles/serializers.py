@@ -56,7 +56,7 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['title', 'description', 'body', 'author', 'read_time', 'average_rating',
-                  'likes', 'dislikes','favorites_count', 'tagsList', 'slug']
+                  'likes', 'dislikes','favorites_count', 'tagsList', 'slug','image']
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -83,6 +83,7 @@ class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
             instance.title = validated_data.get("title", instance.title)
             instance.description = validated_data.get("description", instance.description)
             instance.body = validated_data.get("body", instance.body)
+            instance.image = validated_data.get("image", instance.image)
             instance.save()
             return instance
         else:
