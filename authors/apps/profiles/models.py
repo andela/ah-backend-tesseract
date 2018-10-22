@@ -7,7 +7,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     image = models.URLField(blank=True,
-                            default='https://pixabay.com/en/avatar-person-neutral-man-blank-face-bud-159236/')
+                            default='https://res.cloudinary.com/dzfyapyur/image/upload/v1540273709/widgetdocs/w35e2mpvs0xrp1zu3g2j.png')
     location = models.CharField(max_length=200, blank=True)
     occupation = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
