@@ -88,5 +88,5 @@ class UsersListAPIView(APIView):
 
     def get(self, request):
         users_profiles = Profile.objects.all().exclude(pk=request.user.id)
-        serializer = self.serializer_class(users_profiles, many=True)
+        serializer = self.serializer_class(users_profiles, many=True, context={'request': request})
         return Response({"users": serializer.data}, status=status.HTTP_200_OK)
