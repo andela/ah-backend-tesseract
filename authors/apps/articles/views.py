@@ -11,9 +11,7 @@ from authors.apps import ApplicationJSONRenderer, update_data_with_user
 
 from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 
-from authors.apps.articles.serializers import (ArticlesSerializer,
-                                               ArticleSerializer,
-                                               CommentListSerializer,
+from authors.apps.articles.serializers import (ArticlesSerializer, ArticleSerializer, CommentListSerializer,
                                                CommentSerializer,
                                                RatingSerializer,
                                                LikeSerializer,
@@ -102,7 +100,9 @@ class ArticleAPIView(APIView):
 
     def get(self, request, slug):
         serializer = self.detail_serializer()
-        serializer.instance = find_instance(Article, slug)
+        article = find_instance(Article, slug)
+        article.set_user_rating(request)
+        serializer.instance = article
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, slug):
