@@ -140,8 +140,8 @@ class BaseTest(TestCase):
         # Different user rates an article
 
         self.rate_article = self.client.post('/api/article/rating/', self.test_valid_ratings, format="json")
-        self.client.credentials(HTTP_AUTHORIZATION=self.register_response.data["token"])
         self.rate_article_again = self.client.post('/api/article/rating/', self.test_valid_ratings, format="json")
+        self.get_article_after_rating = self.client.get("/api/article/get/this-is-my-title")
 
 
 class BaseTransactionTest(TransactionTestCase):

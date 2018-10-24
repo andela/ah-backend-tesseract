@@ -16,6 +16,7 @@ class Article(models.Model):
     image = models.TextField(default=None, blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     tags = models.ManyToManyField('articles.Tag', related_name='articles')
+    user_rating = None
 
     def __str__(self):
         return self.title
@@ -77,6 +78,19 @@ class Article(models.Model):
     def dislikes(self):
         dislikes = self.like_set.filter(like=False).count()
         return dislikes
+
+    def set_user_rating(self, request):
+        try:
+            rating = self.rating_set.get(rated_by=request.user)
+        except (Rating.DoesNotExist, TypeError):
+            rating = None
+
+        if rating is not None:
+            self.user_rating = rating.rating
+
+    @property
+    def users_rating(self):
+        return self.user_rating
 
     def comments_on_article(self):
         """

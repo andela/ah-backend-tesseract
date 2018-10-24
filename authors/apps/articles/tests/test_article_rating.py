@@ -25,3 +25,7 @@ class ArticleTests(BaseTest):
     def test_average_rating(self):
         article_instance = get_object_or_404(Article, title=self.article_update_data["title"])
         self.assertEqual(article_instance.average_rating, 3)
+
+    def test_user_rating_is_in_article(self):
+        self.assertIn('users_rating', self.get_article_after_rating.data)
+        self.assertEqual(self.get_article_after_rating.data["users_rating"], 3)
