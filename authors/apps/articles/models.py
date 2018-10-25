@@ -79,6 +79,30 @@ class Article(models.Model):
         dislikes = self.like_set.filter(like=False).count()
         return dislikes
 
+    def likes_query(self, liked, current_user):
+        try:
+            return self.like_set.filter(user=current_user, like=liked).exists()
+        except (Like.DoesNotExist, TypeError):
+            return  False
+
+
+    def get_is_liking(self, current_user):
+        self.isliking = self.likes_query(True, current_user)
+        return self.isliking
+
+    def get_is_disliking(self, current_user):
+        self.is_disliking = self.likes_query(False, current_user)
+        return self.is_disliking
+
+
+    @property
+    def user_isliking(self):
+        return self.isliking
+
+    @property
+    def user_is_disliking(self):
+        return self.is_disliking
+
     def set_user_rating(self, request):
         try:
             rating = self.rating_set.get(rated_by=request.user)

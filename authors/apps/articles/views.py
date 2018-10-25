@@ -1,6 +1,5 @@
 
 from rest_framework import generics
-
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
@@ -8,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 from authors.apps import ApplicationJSONRenderer, update_data_with_user
-
 from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 
 from authors.apps.articles.serializers import (ArticlesSerializer, ArticleSerializer, CommentListSerializer,
@@ -17,14 +15,11 @@ from authors.apps.articles.serializers import (ArticlesSerializer, ArticleSerial
                                                LikeSerializer,
                                                ReportArticleSerializer,
                                                FavoriteArticleSerializer,
-                                               TagSerializer,
-                                               BookmarkSerializer)
+                                               TagSerializer, BookmarkSerializer)
 
 from authors.apps.notifications.tasks import send_email_notifications
-
 from authors.apps.notifications.utils import create_notification
 from authors.apps.notifications.serializers import NotificationSerializer
-
 from .helpers import find_instance, find_parent_comment, find_bookmark, perform_post
 from .models import Article, Comment, FavoriteArticle, Tag, ReportedArticles
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -86,13 +81,11 @@ class ArticleAPIView(APIView):
     def post(self, request):
         article_data = request.data
         article_data["author"] = request.user.id
-        context = {'request': request}
-        serializer = self.serializer_class(data=article_data, context=context)
+        serializer = self.serializer_class(data=article_data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         # Create a notification about the article by this given author
-
         create_notification('publish_article.html', serializer.instance, request.user)
         send_email_notifications.delay()
 
@@ -102,6 +95,8 @@ class ArticleAPIView(APIView):
         serializer = self.detail_serializer()
         article = find_instance(Article, slug)
         article.set_user_rating(request)
+        article.get_is_liking(request.user)
+        article.get_is_disliking(request.user)
         serializer.instance = article
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -311,10 +306,8 @@ class BookmarkAPIView(APIView):
         return Response({"bookmark": serializer.data, "message": "bookmark added"}, status.HTTP_201_CREATED)
 
     def get(self, request):
-
         bookmarks = request.user.bookmark_set
         serializer = self.bookmark_serializer(bookmarks, many=True)
-
         return Response({"bookmarks": serializer.data}, status.HTTP_200_OK)
 
     def delete(self, request, slug):
@@ -324,5 +317,4 @@ class BookmarkAPIView(APIView):
         if not bookmark:
             raise NotFound("This article is not in your bookmarks")
         bookmark.delete()
-
         return Response({"message": "Bookmark deleted successfully"}, status.HTTP_200_OK)
