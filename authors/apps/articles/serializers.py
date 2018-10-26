@@ -46,7 +46,7 @@ class ArticlesSerializer(GeneralRepresentation, serializers.ModelSerializer):
         model = Article
         fields = ['title', 'slug', 'description', 'body',
                   'created_at', 'updated_at', 'image', 'average_rating', 'favorites_count', 'author', 'read_time',
-                  'likes', 'dislikes', 'tagsList', 'users_rating']
+                  'likes', 'dislikes', 'tagsList', 'users_rating','user_isliking','user_is_disliking']
 
 
 class ArticleSerializer(GeneralRepresentation, serializers.ModelSerializer):
