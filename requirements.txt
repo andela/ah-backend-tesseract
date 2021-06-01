@@ -38,7 +38,7 @@ rsa==3.4.2
 six==1.11.0
 social-auth-app-django==2.1.0
 social-auth-core==1.7.0
-urllib3==1.23
+urllib3==1.26.5
 vine==1.1.4
 Werkzeug==0.14.1
 whitenoise==4.0
